@@ -1,0 +1,4 @@
+GitRepositoriesView.GitDirectories=C\:\\Users\\user\\Desktop\\locato\\OrderService\\.git;C\:\\Users\\user\\Desktop\\locato\\service-registery\\.git;C\:\\Users\\user\\Desktop\\locato\\Gateway\\.git;C\:\\Users\\user\\Desktop\\locato\\shop-service\\.git;C\:\\Users\\user\\Desktop\\locato\\Notification-Service\\.git;C\:\\Users\\user\\Desktop\\locato\\Servicechat\\.git;C\:\\Users\\user\\Desktop\\locato\\SuperUSer\\.git;C\:\\Users\\user\\Desktop\\locato\\userRegistry\\.git;
+GitRepositoriesView.GitDirectories.relative=OrderService\\.git;service-registery\\.git;Gateway\\.git;shop-service\\.git;Notification-Service\\.git;Servicechat\\.git;SuperUSer\\.git;userRegistry\\.git;
+core_autoIgnoreDerivedResources=false
+eclipse.preferences.version=1

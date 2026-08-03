@@ -1,0 +1,325 @@
+services:
+
+  # ==========================
+  # MYSQL
+  # ==========================
+  mysql:
+    image: mysql:8.4
+    container_name: locato-mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./msql:/docker-entrypoint-initdb.d
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+    networks:
+      - locato-network
+
+
+  # ==========================
+  # KAFKA (KRaft)
+  # ==========================
+  kafka:
+    image: apache/kafka:3.9.1
+    container_name: kafka
+    restart: unless-stopped
+
+    ports:
+      - "9092:9092"
+
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+
+    networks:
+      - locato-network
+
+
+  # ==========================
+  # EUREKA
+  # ==========================
+  eureka:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: eureka
+
+    container_name: eureka
+
+    restart: unless-stopped
+
+    ports:
+      - "8761:8761"
+
+    environment:
+      SERVER_PORT: 8761
+
+    depends_on:
+      - mysql
+      - kafka
+
+    networks:
+      - locato-network
+
+
+  # ==========================
+  # USER REGISTRY
+  # ==========================
+  user-registry:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: user-registry
+
+    container_name: user-registry
+
+    restart: unless-stopped
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:mysql://mysql:3306/user
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_SERVER: kafka:9092
+      EUREKA_SERVER: http://eureka:8761/eureka/
+
+    depends_on:
+      - mysql
+      - kafka
+      - eureka
+
+    networks:
+      - locato-network
+
+
+  # ==========================
+  # SHOP SERVICE
+  # ==========================
+  shop-service:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: shop-service
+
+    container_name: shop-service
+
+    restart: unless-stopped
+
+    ports:
+      - "8084:8084"
+
+    environment:
+      SERVER_PORT: 8084
+      DB_URL: jdbc:mysql://mysql:3306/shop
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_SERVER: kafka:9092
+      EUREKA_SERVER: http://eureka:8761/eureka/
+
+    depends_on:
+      - mysql
+      - kafka
+      - eureka
+
+    networks:
+      - locato-network
+
+
+  # ==========================
+  # CHAT
+  # ==========================
+  service-chat:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: service-chat
+
+    container_name: service-chat
+
+    restart: unless-stopped
+
+    ports:
+      - "8085:8085"
+
+    environment:
+      SERVER_PORT: 8085
+      DB_URL: jdbc:mysql://mysql:3306/messageuser
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_SERVER: kafka:9092
+      EUREKA_SERVER: http://eureka:8761/eureka/
+
+    depends_on:
+      - mysql
+      - kafka
+      - eureka
+
+    networks:
+      - locato-network
+
+
+  # ==========================
+  # ORDER
+  # ==========================
+  order-service:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: order-service
+
+    container_name: order-service
+
+    restart: unless-stopped
+
+    ports:
+      - "8086:8086"
+
+    environment:
+      SERVER_PORT: 8086
+      DB_URL: jdbc:mysql://mysql:3306/order
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_SERVER: kafka:9092
+      EUREKA_SERVER: http://eureka:8761/eureka/
+
+    depends_on:
+      - mysql
+      - kafka
+      - eureka
+
+    networks:
+      - locato-network
+
+
+  # ==========================
+  # NOTIFICATION
+  # ==========================
+  notification-service:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: notification-service
+
+    container_name: notification-service
+
+    restart: unless-stopped
+
+    ports:
+      - "8087:8087"
+
+    environment:
+      SERVER_PORT: 8087
+      DB_URL: jdbc:mysql://mysql:3306/notification
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_SERVER: kafka:9092
+      EUREKA_SERVER: http://eureka:8761/eureka/
+
+    depends_on:
+      - mysql
+      - kafka
+      - eureka
+
+    networks:
+      - locato-network
+
+
+  # ==========================
+  # SUPER USER
+  # ==========================
+  # super-user:
+  #   build:
+  #     context: ..
+  #     dockerfile: Dockerfile
+  #     target: super-user
+
+  #   container_name: super-user
+
+  #   restart: unless-stopped
+
+  #   ports:
+  #     - "8088:8088"
+
+  #   environment:
+  #     SERVER_PORT: 8088
+  #     DB_URL: jdbc:mysql://mysql:3306/superuser
+  #     DB_USERNAME: root
+  #     DB_PASSWORD: ${MYSQL_PASSWORD}
+  #     KAFKA_SERVER: kafka:9092
+  #     EUREKA_SERVER: http://eureka:8761/eureka/
+
+  #   depends_on:
+  #     - mysql
+  #     - kafka
+  #     - eureka
+
+  #   networks:
+  #     - locato-network
+
+
+  # ==========================
+  # GATEWAY
+  # ==========================
+  gateway:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: gateway
+
+    container_name: gateway
+
+    restart: unless-stopped
+
+    ports:
+      - "8079:8079"
+
+    environment:
+      SERVER_PORT: 8079
+      EUREKA_SERVER: http://eureka:8761/eureka/
+
+    depends_on:
+      - eureka
+      - user-registry
+      - shop-service
+      - service-chat
+      - order-service
+      - notification-service
+      # - super-user
+
+    networks:
+      - locato-network
+
+
+volumes:
+  mysql-data:
+  kafka-data:
+
+networks:
+  locato-network:
+    driver: bridge
