@@ -1,0 +1,89 @@
+# ====== GATEWAY CONFIGURATION ======
+# This configuration is for the API Gateway service that validates tokens from SuperUser service
+
+# Gateway Properties Example (for application-gateway.yml or application.yml)
+
+# Spring Cloud Gateway Configuration
+spring:
+  cloud:
+    gateway:
+      # Routes configuration
+      routes:
+        # Admin Authentication - Public endpoint (no JWT required)
+        - id: admin-auth
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/admin/auth/**
+          filters:
+            - RewritePath=/api/admin/(?<segment>.*), /$\{segment}
+
+        # Admin Users - JWT Required
+        - id: admin-users
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/admin/users/**
+          filters:
+            - name: JwtAuthenticationFilter
+            - RewritePath=/api/admin/(?<segment>.*), /$\{segment}
+
+        # Admin Shops - JWT Required
+        - id: admin-shops
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/admin/shops/**
+          filters:
+            - name: JwtAuthenticationFilter
+            - RewritePath=/api/admin/(?<segment>.*), /$\{segment}
+
+        # Admin Audit - JWT Required
+        - id: admin-audit
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/admin/audit/**
+          filters:
+            - name: JwtAuthenticationFilter
+            - RewritePath=/api/admin/(?<segment>.*), /$\{segment}
+
+        # Dashboard - JWT Required
+        - id: dashboard
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/admin/dashboard/**
+          filters:
+            - name: JwtAuthenticationFilter
+            - RewritePath=/api/admin/(?<segment>.*), /$\{segment}
+
+        # Health Check - Public endpoint
+        - id: health
+          uri: http://localhost:8088
+          predicates:
+            - Path=/health,/actuator/**
+
+      # Enable/Disable features
+      default-filters:
+        - name: CircuitBreaker
+          args:
+            name: default
+            fallbackUri: forward:/fallback
+
+# Server port for Gateway
+server:
+  port: 8080
+
+# Logging
+logging:
+  level:
+    com.whoami.launch: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.security: DEBUG
+
+# JWT Configuration (Same as SuperUser Service)
+jwt:
+  secret: SuperUserAdminSecretKeyMustBeAtLeast256BitsLongForJwtSigning123
+  access-expiration: 3600000    # 1 hour
+  refresh-expiration: 604800000  # 7 days
+
+# Internal API Key (for service-to-service communication)
+internal:
+  api:
+    key: WHOAMI_INTERNAL_2026

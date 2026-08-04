@@ -1,0 +1,66 @@
+package com.whoami.launch;
+
+import java.util.List;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+
+import org.springframework.web.cors.CorsConfiguration;
+
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+
+@Configuration
+public class CorsConfig {
+
+    @Bean
+    @Order(-1)
+    public CorsWebFilter corsWebFilter() {
+
+        CorsConfiguration config =
+                new CorsConfiguration();
+
+        config.setAllowedOrigins(
+        	    List.of(
+        	        "http://127.0.0.1:50447",
+        	        "http://10.0.2.2:51706",
+        	        "http://10.164.10.226:65247",
+        	        "http://10.0.2.2:8079",
+        	        "http://10.228.187.226:8079"
+        	    )
+        	);
+        config.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS",
+                        "PATCH"
+                )
+        );
+
+        config.setAllowedHeaders(
+                List.of("*")
+        );
+
+        config.setExposedHeaders(
+                List.of("*")
+        );
+
+        config.setAllowCredentials(true);
+
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/**",
+                config
+        );
+
+        return new CorsWebFilter(source);
+    }
+}
