@@ -64,6 +64,7 @@ jobs:
           dockerfile: ${{ inputs.dockerfile }}
           image-name: ${{ inputs.image-name }}
           image-tag: ${{ inputs.image-tag }}
+          firebase-credentials: ${{ secrets.FIREBASE_CREDENTIALS }}
 
 ################################################################################
 # Update GitOps Repository

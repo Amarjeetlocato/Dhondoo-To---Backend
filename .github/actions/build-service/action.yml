@@ -16,6 +16,9 @@ inputs:
   image-tag:
     required: true
 
+  firebase-credentials:
+    required: false
+
 runs:
 
   using: composite
@@ -45,8 +48,8 @@ runs:
       shell: bash
       run: |
         mkdir -p Notification-Service/src/main/resources
-        cat <<EOF > Notification-Service/src/main/resources/firebase-config.json
-        ${{ secrets.FIREBASE_CREDENTIALS }}
+        cat > Notification-Service/src/main/resources/firebase-config.json <<EOF
+        ${{ inputs.firebase-credentials }}
         EOF
 
 ################################################################################
@@ -56,7 +59,6 @@ runs:
     - name: Build Maven Module
       shell: bash
       run: |
-
         mvn \
           -B \
           clean \
@@ -75,8 +77,8 @@ runs:
     - name: Login DockerHub
       uses: docker/login-action@v3
       with:
-        username: ${{ env.DOCKERHUB_USERNAME }}
-        password: ${{ env.DOCKERHUB_TOKEN }}
+        username: ${{ env.DOCKER_USERNAME }}
+        password: ${{ env.DOCKER_PASSWORD }}
 
     - name: Build and Push Image
       uses: docker/build-push-action@v6
@@ -86,8 +88,8 @@ runs:
         push: true
 
         tags: |
-          ${{ env.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:${{ inputs.image-tag }}
-          ${{ env.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:latest
+          ${{ env.DOCKER_USERNAME }}/${{ inputs.image-name }}:${{ inputs.image-tag }}
+          ${{ env.DOCKER_USERNAME }}/${{ inputs.image-name }}:latest
 
         cache-from: type=gha
         cache-to: type=gha,mode=max
