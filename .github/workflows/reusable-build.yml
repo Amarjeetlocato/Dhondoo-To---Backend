@@ -1,0 +1,76 @@
+name: Reusable Build
+
+on:
+  workflow_call:
+
+    inputs:
+
+      module:
+        required: true
+        type: string
+
+      image-name:
+        required: true
+        type: string
+
+      gitops-service:
+        required: true
+        type: string
+
+      dockerfile:
+        required: true
+        type: string
+
+      image-tag:
+        required: true
+        type: string
+
+jobs:
+
+################################################################################
+# Build & Push Service
+################################################################################
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+      GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+
+    steps:
+
+################################################################################
+# Checkout Backend Repository
+################################################################################
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+################################################################################
+# Build Docker Image
+################################################################################
+
+      - name: Build Service
+        uses: ./.github/actions/build-service
+        with:
+          module: ${{ inputs.module }}
+          dockerfile: ${{ inputs.dockerfile }}
+          image-name: ${{ inputs.image-name }}
+          image-tag: ${{ inputs.image-tag }}
+
+################################################################################
+# Update GitOps Repository
+################################################################################
+
+      - name: Update GitOps
+        uses: ./.github/actions/update-gitops
+        with:
+          service: ${{ inputs.gitops-service }}
+          image_tag: ${{ inputs.image-tag }}

@@ -79,7 +79,7 @@
     </properties>
 
     <!-- ===================================================== -->
-    <!-- SPRING BOOT -->
+    <!-- Dependency Management -->
     <!-- ===================================================== -->
 
     <dependencyManagement>
@@ -119,86 +119,91 @@
     </dependencyManagement>
 
     <!-- ===================================================== -->
-    <!-- BUILD -->
+    <!-- Build -->
     <!-- ===================================================== -->
 
-   <build>
+    <build>
 
-    <pluginManagement>
+        <pluginManagement>
 
-        <plugins>
+            <plugins>
 
-            <!-- Spring Boot Plugin -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring.boot.version}</version>
+                <!-- Spring Boot Plugin -->
 
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <plugin>
 
-            </plugin>
+                    <groupId>org.springframework.boot</groupId>
 
-            <!-- Compiler Plugin -->
-            <plugin>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
 
-                <groupId>org.apache.maven.plugins</groupId>
+                    <version>${spring.boot.version}</version>
 
-                <artifactId>maven-compiler-plugin</artifactId>
+                    <executions>
 
-                <version>3.14.0</version>
+                        <execution>
 
-                <configuration>
+                            <goals>
 
-                    <release>${java.version}</release>
+                                <goal>repackage</goal>
 
-                    <annotationProcessorPaths>
+                            </goals>
 
-                        <path>
+                        </execution>
 
-                            <groupId>org.projectlombok</groupId>
+                    </executions>
 
-                            <artifactId>lombok</artifactId>
+                </plugin>
 
-                            <version>${lombok.version}</version>
+                <!-- Compiler Plugin -->
 
-                        </path>
+                <plugin>
 
-                    </annotationProcessorPaths>
+                    <groupId>org.apache.maven.plugins</groupId>
 
-                </configuration>
+                    <artifactId>maven-compiler-plugin</artifactId>
 
-            </plugin>
+                    <version>3.14.0</version>
 
-            <!-- Surefire -->
-            <plugin>
+                    <configuration>
 
-                <groupId>org.apache.maven.plugins</groupId>
+                        <release>${java.version}</release>
 
-                <artifactId>maven-surefire-plugin</artifactId>
+                        <parameters>true</parameters>
 
-                <version>3.5.3</version>
+                        <annotationProcessorPaths>
 
-            </plugin>
+                            <path>
 
-            <plugin>
-  <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-compiler-plugin</artifactId>
-  <configuration>
-    <parameters>true</parameters>
-  </configuration>
-</plugin>
+                                <groupId>org.projectlombok</groupId>
 
+                                <artifactId>lombok</artifactId>
 
-        </plugins>
+                                <version>${lombok.version}</version>
 
-    </pluginManagement>
+                            </path>
 
-</build>
+                        </annotationProcessorPaths>
+
+                    </configuration>
+
+                </plugin>
+
+                <!-- Surefire Plugin -->
+
+                <plugin>
+
+                    <groupId>org.apache.maven.plugins</groupId>
+
+                    <artifactId>maven-surefire-plugin</artifactId>
+
+                    <version>3.5.3</version>
+
+                </plugin>
+
+            </plugins>
+
+        </pluginManagement>
+
+    </build>
 
 </project>

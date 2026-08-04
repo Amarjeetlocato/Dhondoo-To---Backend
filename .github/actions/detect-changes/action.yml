@@ -1,0 +1,67 @@
+name: Detect Changed Services
+
+description: Detect which backend services changed
+
+outputs:
+
+  gateway:
+    value: ${{ steps.filter.outputs.gateway }}
+
+  userRegistry:
+    value: ${{ steps.filter.outputs.userRegistry }}
+
+  shopService:
+    value: ${{ steps.filter.outputs.shopService }}
+
+  orderService:
+    value: ${{ steps.filter.outputs.orderService }}
+
+  notificationService:
+    value: ${{ steps.filter.outputs.notificationService }}
+
+  servicechat:
+    value: ${{ steps.filter.outputs.servicechat }}
+
+  serviceRegistry:
+    value: ${{ steps.filter.outputs.serviceRegistry }}
+
+  shared:
+    value: ${{ steps.filter.outputs.shared }}
+
+runs:
+
+  using: composite
+
+  steps:
+
+    - name: Detect Changed Files
+      id: filter
+      uses: dorny/paths-filter@v3
+      with:
+
+        filters: |
+
+          gateway:
+            - 'Gateway/**'
+
+          userRegistry:
+            - 'userRegistry/**'
+
+          shopService:
+            - 'shop-service/**'
+
+          orderService:
+            - 'OrderService/**'
+
+          notificationService:
+            - 'Notification-Service/**'
+
+          servicechat:
+            - 'Servicechat/**'
+
+          serviceRegistry:
+            - 'service-registry/**'
+
+          shared:
+            - 'Locato-constants/**'
+            - 'pom.xml'

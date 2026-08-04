@@ -1,0 +1,73 @@
+name: Update GitOps
+
+description: Update Helm image tag inside GitOps repository
+
+inputs:
+
+  service:
+    description: Helm chart folder
+    required: true
+
+  image_tag:
+    description: Docker image tag
+    required: true
+
+runs:
+
+  using: composite
+
+  steps:
+
+    - name: Checkout GitOps Repository
+      uses: actions/checkout@v4
+      with:
+        repository: Amarjeetlocato/Dhondoo-To---gitops
+        token: ${{ env.GITOPS_TOKEN }}
+        path: gitops
+        fetch-depth: 0
+
+    - name: Configure Git
+      shell: bash
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+
+    - name: Update Helm values
+      shell: bash
+      working-directory: gitops
+      run: |
+
+        FILE="helm/${{ inputs.service }}/values.yaml"
+
+        echo "Updating $FILE"
+
+        if [ ! -f "$FILE" ]; then
+          echo "ERROR: $FILE not found"
+          exit 1
+        fi
+
+        if ! grep -q "^  tag:" "$FILE"; then
+          echo "ERROR: tag field not found in $FILE"
+          exit 1
+        fi
+
+        sed -i "s/^  tag:.*/  tag: \"${{ inputs.image_tag }}\"/" "$FILE"
+
+        echo "Updated tag:"
+        grep "tag:" "$FILE"
+
+    - name: Commit Changes
+      shell: bash
+      working-directory: gitops
+      run: |
+
+        git add .
+
+        if git diff --cached --quiet; then
+          echo "No changes detected."
+          exit 0
+        fi
+
+        git commit -m "Update ${{ inputs.service }} image -> ${{ inputs.image_tag }}"
+
+        git push origin main
