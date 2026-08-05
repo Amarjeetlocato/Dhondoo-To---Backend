@@ -2,9 +2,7 @@ name: Reusable Build
 
 on:
   workflow_call:
-
     inputs:
-
       module:
         required: true
         type: string
@@ -26,17 +24,11 @@ on:
         type: string
 
 jobs:
-
-################################################################################
-# Build & Push Service
-################################################################################
-
   build:
-
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write
+      contents: read
       packages: write
 
     env:
@@ -47,14 +39,14 @@ jobs:
     steps:
 
 ################################################################################
-# Checkout Backend Repository
+# Checkout Repository
 ################################################################################
 
       - name: Checkout Repository
         uses: actions/checkout@v4
 
 ################################################################################
-# Build Docker Image
+# Build Service
 ################################################################################
 
       - name: Build Service
@@ -67,11 +59,24 @@ jobs:
           firebase-credentials: ${{ secrets.FIREBASE_CREDENTIALS }}
 
 ################################################################################
-# Update GitOps Repository
+# Publish Docker Image
 ################################################################################
 
-      - name: Update GitOps
-        uses: ./.github/actions/update-gitops
+      - name: Publish Docker Image
+        uses: ./.github/actions/docker-publish
+        with:
+          dockerfile: ${{ inputs.dockerfile }}
+          image-name: ${{ inputs.image-name }}
+          image-tag: ${{ inputs.image-tag }}
+
+################################################################################
+# Notify GitOps Repository
+################################################################################
+
+      - name: Notify GitOps Repository
+        uses: ./.github/actions/notify-gitops
         with:
           service: ${{ inputs.gitops-service }}
-          image_tag: ${{ inputs.image-tag }}
+          image: ${{ inputs.image-name }}
+          tag: ${{ inputs.image-tag }}
+          environment: development

@@ -1,0 +1,130 @@
+name: Update GitOps Image
+
+description: Updates the Helm values file with the new Docker image and tag.
+
+inputs:
+
+  service:
+    description: Service Name
+    required: true
+
+  image:
+    description: Docker Image
+    required: true
+
+  tag:
+    description: Docker Tag
+    required: true
+
+  environment:
+    description: Deployment Environment
+    required: true
+
+  github-token:
+    description: GitHub Personal Access Token
+    required: true
+
+runs:
+
+  using: composite
+
+  steps:
+
+    ###########################################################################
+    # Install yq
+    ###########################################################################
+
+    - name: Install yq
+      shell: bash
+      run: |
+        YQ_VERSION=v4.44.3
+        sudo wget -q https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -O /usr/local/bin/yq
+        sudo chmod +x /usr/local/bin/yq
+
+    ###########################################################################
+    # Validate Values File
+    ###########################################################################
+
+    - name: Validate Values File
+      shell: bash
+      run: |
+
+        VALUES_FILE="environments/${{ inputs.environment }}/values/${{ inputs.service }}-values.yaml"
+
+        if [ ! -f "$VALUES_FILE" ]; then
+          echo "ERROR: $VALUES_FILE not found."
+          exit 1
+        fi
+
+        echo "VALUES_FILE=$VALUES_FILE" >> $GITHUB_ENV
+
+    ###########################################################################
+    # Update Image Repository
+    ###########################################################################
+
+    - name: Update Repository
+      shell: bash
+      run: |
+
+        yq -i '
+          .image.repository = "${{ inputs.image }}"
+        ' "$VALUES_FILE"
+
+    ###########################################################################
+    # Update Image Tag
+    ###########################################################################
+
+    - name: Update Tag
+      shell: bash
+      run: |
+
+        yq -i '
+          .image.tag = "${{ inputs.tag }}"
+        ' "$VALUES_FILE"
+
+    ###########################################################################
+    # Show Changes
+    ###########################################################################
+
+    - name: Show Diff
+      shell: bash
+      run: |
+
+        git diff
+
+    ###########################################################################
+    # Commit
+    ###########################################################################
+
+    - name: Commit Changes
+      shell: bash
+      run: |
+
+        git config user.name "Dhondoo GitOps Bot"
+        git config user.email "actions@github.com"
+
+        git add "$VALUES_FILE"
+
+        if git diff --cached --quiet; then
+          echo "No changes detected."
+          exit 0
+        fi
+
+        git commit -m "ci(${{
+          inputs.service
+        }}): deploy image ${{ inputs.tag }}"
+
+    ###########################################################################
+    # Push
+    ###########################################################################
+
+    - name: Push Changes
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+
+        git remote set-url origin \
+        https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+
+        git push origin HEAD

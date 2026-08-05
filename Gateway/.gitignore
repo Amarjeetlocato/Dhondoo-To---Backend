@@ -31,3 +31,4 @@ build/
 
 ### VS Code ###
 .vscode/
+Notification-Service/src/main/resources/firebase-config.json
