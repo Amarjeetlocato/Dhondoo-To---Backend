@@ -68,10 +68,9 @@ public class SecurityConfig {
 
                     // Preflight requests
                     .requestMatchers(
-                            HttpMethod.OPTIONS,
-                            "/**"
+        "/actuator/health",
+                     "/actuator/health/**"
                     ).permitAll()
-
                     // Protected APIs
                     .anyRequest().authenticated()
             )
