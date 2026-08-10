@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
@@ -14,20 +15,22 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-    private static final String ADMIN_SECRET =
-            "SuperUserAdminSecretKeyMustBeAtLeast256BitsLongForJwtSigning123";
+    @Value("${jwt.admin-secret}")
+    private String adminSecret;
 
-    private static final String USER_SECRET =
-            "afafasfafafasfasfasfafacasdasfasxASFACASDFACASDFASFASFDAFASFASDAADSCSDFADCVSGCFVADXCcadwavfsfarvf";
+    @Value("${jwt.user-secret}")
+    private String userSecret;
 
     private Key getAdminKey() {
         return Keys.hmacShaKeyFor(
-                ADMIN_SECRET.getBytes(StandardCharsets.UTF_8));
+                adminSecret.getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     private Key getUserKey() {
         return Keys.hmacShaKeyFor(
-                USER_SECRET.getBytes(StandardCharsets.UTF_8));
+                userSecret.getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     /**
@@ -65,6 +68,7 @@ public class JwtUtil {
             } catch (Exception ex) {
 
                 System.out.println("TOKEN INVALID");
+
                 throw new JwtException(
                         "Invalid JWT Token",
                         ex
@@ -76,21 +80,16 @@ public class JwtUtil {
     public boolean validateToken(String token) {
 
         try {
-
             extractClaims(token);
-
             return true;
 
         } catch (Exception e) {
-
             return false;
         }
     }
 
     public String extractUsername(String token) {
-
-        return extractClaims(token)
-                .getSubject();
+        return extractClaims(token).getSubject();
     }
 
     public String extractEmail(String token) {
@@ -159,8 +158,7 @@ public class JwtUtil {
                     extractClaims(token)
                             .getExpiration();
 
-            return expiration.before(
-                    new Date());
+            return expiration.before(new Date());
 
         } catch (Exception e) {
 
