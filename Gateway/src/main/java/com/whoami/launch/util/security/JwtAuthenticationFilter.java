@@ -2,7 +2,6 @@ package com.whoami.launch.util.security;
 
 import java.nio.charset.StandardCharsets;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,8 +21,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter implements WebFilter, Ordered {
 
-	
-    private  final JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
     @Override
     public Mono<Void> filter(
@@ -51,35 +49,50 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
         // ====================================
         // PUBLIC ROUTES
         // ====================================
-     // ====================================
-     // PUBLIC ROUTES
-     // ====================================
-     if (
-             path.equals("/api/auth/login")
-             || path.equals("/api/auth/register")
-             || path.equals("/api/auth/verify-otp")
-             || path.equals("/api/auth/forgot-password")
-             || path.equals("/api/auth/update-password")
-             || path.equals("/api/auth/verify-reset-otp")
-             || path.equals("/api/auth/refresh")
+        if (
+                // --------------------------------
+                // ACTUATOR / KUBERNETES HEALTH
+                // --------------------------------
+                path.equals("/actuator/health")
+                || path.equals("/actuator/health/liveness")
+                || path.equals("/actuator/health/readiness")
 
-             || path.equals("/public/health")
+                // --------------------------------
+                // AUTH APIs
+                // --------------------------------
+                || path.equals("/api/auth/login")
+                || path.equals("/api/auth/register")
+                || path.equals("/api/auth/verify-otp")
+                || path.equals("/api/auth/forgot-password")
+                || path.equals("/api/auth/update-password")
+                || path.equals("/api/auth/verify-reset-otp")
+                || path.equals("/api/auth/refresh")
 
-             || path.equals("/admin/auth/register")
-             || path.equals("/admin/auth/setup-totp/aksooon098098@gmail.com")
-             || path.equals("/admin/auth/verify-totp")
-             || path.equals("/admin/auth/login")
+                // --------------------------------
+                // PUBLIC HEALTH
+                // --------------------------------
+                || path.equals("/public/health")
 
-             // ====================================
-             // PUBLIC SHOP APIs
-             // ====================================
-             || path.startsWith("/api/public/")
-     ) {
+                // --------------------------------
+                // ADMIN AUTH
+                // --------------------------------
+                || path.equals("/admin/auth/register")
+                || path.equals("/admin/auth/setup-totp/aksooon098098@gmail.com")
+                || path.equals("/admin/auth/verify-totp")
+                || path.equals("/admin/auth/login")
 
-         System.out.println("PUBLIC API SKIPPED JWT: " + path);
+                // --------------------------------
+                // PUBLIC SHOP APIs
+                // --------------------------------
+                || path.startsWith("/api/public/")
+        ) {
 
-         return chain.filter(exchange);
-     }
+            System.out.println(
+                    "PUBLIC API SKIPPED JWT: " + path
+            );
+
+            return chain.filter(exchange);
+        }
 
         // ====================================
         // GET AUTH HEADER
@@ -90,7 +103,8 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
                 .getFirst(HttpHeaders.AUTHORIZATION);
 
         System.out.println(
-                "AUTH HEADER = " + authHeader);
+                "AUTH HEADER = " + authHeader
+        );
 
         // ====================================
         // TOKEN MISSING
@@ -148,6 +162,9 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
             );
         }
 
+        // ====================================
+        // TOKEN VALID
+        // ====================================
         return chain.filter(exchange);
     }
 
@@ -195,3 +212,4 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
         return 0;
     }
 }
+
