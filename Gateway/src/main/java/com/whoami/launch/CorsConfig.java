@@ -1,35 +1,36 @@
 package com.whoami.launch;
 
+import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
 import org.springframework.web.cors.CorsConfiguration;
-
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 @Configuration
 public class CorsConfig {
 
+    @Value("${app.cors.allowed-origins}")
+    private String allowedOrigins;
+
     @Bean
     @Order(-1)
     public CorsWebFilter corsWebFilter() {
 
-        CorsConfiguration config =
-                new CorsConfiguration();
+        CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(
-        	    List.of(
-        	        "http://127.0.0.1:50447",
-        	        "http://10.0.2.2:51706",
-        	        "http://10.164.10.226:65247",
-        	        "http://10.0.2.2:8079",
-        	        "http://10.228.187.226:8079"
-        	    )
-        	);
+                Arrays.stream(allowedOrigins.split(","))
+                        .map(String::trim)
+                        .filter(origin -> !origin.isEmpty())
+                        .toList()
+        );
+
         config.setAllowedMethods(
                 List.of(
                         "GET",
@@ -62,5 +63,6 @@ public class CorsConfig {
         );
 
         return new CorsWebFilter(source);
-    }
 }
+}
+
