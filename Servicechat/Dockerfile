@@ -17,3 +17,5 @@ COPY --from=builder /app/Servicechat/target/*.jar app.jar
 EXPOSE 8085
 
 ENTRYPOINT ["java","-jar","app.jar"]
+
+# CI pipeline verification
