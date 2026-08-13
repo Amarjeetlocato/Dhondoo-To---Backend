@@ -89,7 +89,6 @@ runs:
 
         tags: |
           ${{ env.DOCKER_USERNAME }}/${{ inputs.image-name }}:${{ inputs.image-tag }}
-          ${{ env.DOCKER_USERNAME }}/${{ inputs.image-name }}:latest
 
         cache-from: type=gha
         cache-to: type=gha,mode=max
