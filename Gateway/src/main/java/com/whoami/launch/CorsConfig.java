@@ -23,12 +23,12 @@ public class CorsConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(
-                Arrays.stream(frontendUrl.split(","))
-                        .map(String::trim)
-                        .filter(url -> !url.isBlank())
-                        .toList()
-        );
+        config.setAllowedOriginPatterns(
+        Arrays.stream(frontendUrl.split(","))
+                .map(String::trim)
+                .filter(url -> !url.isBlank())
+                .toList()
+);
 
         config.setAllowedMethods(
                 List.of(
