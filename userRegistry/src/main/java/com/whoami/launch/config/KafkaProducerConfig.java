@@ -1,6 +1,5 @@
 package com.whoami.launch.config;
 
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +22,7 @@ public class KafkaProducerConfig {
 
         config.put(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                "localhost:9092");
+                System.getenv().getOrDefault("KAFKA_SERVERS", "kafka:9092"));
 
         config.put(
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
@@ -41,3 +40,4 @@ public class KafkaProducerConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 }
+
