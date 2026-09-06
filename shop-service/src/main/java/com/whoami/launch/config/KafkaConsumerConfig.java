@@ -1,7 +1,5 @@
 package com.whoami.launch.config;
 
-
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +29,11 @@ public class KafkaConsumerConfig {
 
         Map<String, Object> props = new HashMap<>();
 
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(
+                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                System.getenv().getOrDefault("KAFKA_SERVERS", "kafka:9092")
+        );
+
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "shop-group");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
                 StringDeserializer.class);
