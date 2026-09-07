@@ -31,7 +31,6 @@ public class MessageService {
 	@Autowired
 	private MessageRepositories messageRepository;
 
-	
 	@Autowired
 	private SimpMessagingTemplate messagingTemplate;
 
@@ -61,7 +60,6 @@ public class MessageService {
 				conversation.setReceiverId(payload.getReceiverId());
 				conversation.setMessages(new ArrayList<>());
 
-				// IMPORTANT
 				conversation = conversationRepository.save(conversation);
 			}
 
@@ -83,16 +81,16 @@ public class MessageService {
 			message.setReplyPreview(payload.getReplyPreview());
 			message.setReplySenderId(payload.getReplySenderId());
 
-			message.setMessageType(payload.getMessageType() != null ? payload.getMessageType() : MessageType.TEXT);
+			message.setMessageType(
+					payload.getMessageType() != null
+							? payload.getMessageType()
+							: MessageType.TEXT
+			);
 
 			message.setMediaUrl(payload.getMediaUrl());
-
 			message.setFileName(payload.getFileName());
-
 			message.setMimeType(payload.getMimeType());
-
 			message.setFileSize(payload.getFileSize());
-
 			message.setReferenceId(payload.getReferenceId());
 
 			message.setConversation(conversation);
@@ -108,15 +106,24 @@ public class MessageService {
 
 			notifyReceiver(savedMessage);
 
-			return new ChatMessageDTO(savedMessage.getId(), savedMessage.getSenderId(), savedMessage.getReceiverId(),
-					savedMessage.getContent(), savedMessage.getTimestamp(), savedMessage.isRead(),
+			return new ChatMessageDTO(
+					savedMessage.getId(),
+					savedMessage.getSenderId(),
+					savedMessage.getReceiverId(),
+					savedMessage.getContent(),
+					savedMessage.getTimestamp(),
+					savedMessage.isRead(),
 					savedMessage.getStatus(),
-
-					savedMessage.getMessageType(), savedMessage.getMediaUrl(), savedMessage.getFileName(),
-					savedMessage.getMimeType(), savedMessage.getFileSize(), savedMessage.getReferenceId(),
-
-					savedMessage.getReplyToMessageId(), savedMessage.getReplyPreview(),
-					savedMessage.getReplySenderId());
+					savedMessage.getMessageType(),
+					savedMessage.getMediaUrl(),
+					savedMessage.getFileName(),
+					savedMessage.getMimeType(),
+					savedMessage.getFileSize(),
+					savedMessage.getReferenceId(),
+					savedMessage.getReplyToMessageId(),
+					savedMessage.getReplyPreview(),
+					savedMessage.getReplySenderId()
+			);
 
 		} catch (Exception e) {
 
@@ -131,9 +138,15 @@ public class MessageService {
 
 		ChatMessageDTO saved = saveMessage(payload);
 
-		messagingTemplate.convertAndSend("/topic/messages/" + saved.getReceiverId(), saved);
+		messagingTemplate.convertAndSend(
+				"/topic/messages/" + saved.getReceiverId(),
+				saved
+		);
 
-		messagingTemplate.convertAndSend("/topic/messages/" + saved.getSenderId(), saved);
+		messagingTemplate.convertAndSend(
+				"/topic/messages/" + saved.getSenderId(),
+				saved
+		);
 
 		return saved;
 	}
@@ -150,7 +163,8 @@ public class MessageService {
 			return currentStatus;
 		}
 
-		if (currentStatus == MessageStatus.DELIVERED && incomingStatus == MessageStatus.SENT) {
+		if (currentStatus == MessageStatus.DELIVERED
+				&& incomingStatus == MessageStatus.SENT) {
 			return currentStatus;
 		}
 
@@ -164,7 +178,8 @@ public class MessageService {
 			return MessageStatus.READ;
 		}
 
-		if (incomingStatus == MessageStatus.DELIVERED && currentStatus == MessageStatus.SENT) {
+		if (incomingStatus == MessageStatus.DELIVERED
+				&& currentStatus == MessageStatus.SENT) {
 
 			message.setStatus(MessageStatus.DELIVERED);
 
@@ -176,60 +191,71 @@ public class MessageService {
 		return currentStatus;
 	}
 
-	public Page<ChatMessageDTO> getMessages(String conversationId, Pageable pageable) {
+	public Page<ChatMessageDTO> getMessages(
+			String conversationId,
+			Pageable pageable) {
 
-		return messageRepository.findByConversation_ConversationId(conversationId, pageable)
-				.map(message -> new ChatMessageDTO(message.getId(), message.getSenderId(), message.getReceiverId(),
-						message.getContent(), message.getTimestamp(), message.isRead(), message.getStatus(),
-						message.getMessageType(), message.getMediaUrl(), message.getFileName(), message.getMimeType(),
-						message.getFileSize(), message.getReferenceId(), message.getReplyToMessageId(),
-						message.getReplyPreview(), message.getReplySenderId()));
+		return messageRepository
+				.findByConversation_ConversationId(conversationId, pageable)
+				.map(message -> new ChatMessageDTO(
+						message.getId(),
+						message.getSenderId(),
+						message.getReceiverId(),
+						message.getContent(),
+						message.getTimestamp(),
+						message.isRead(),
+						message.getStatus(),
+						message.getMessageType(),
+						message.getMediaUrl(),
+						message.getFileName(),
+						message.getMimeType(),
+						message.getFileSize(),
+						message.getReferenceId(),
+						message.getReplyToMessageId(),
+						message.getReplyPreview(),
+						message.getReplySenderId()
+				));
 	}
 
 	private void notifyReceiver(Message message) {
 
-//	    UserProfileResponse sender =
-//	            shopClient.getUserProfile(message.getSenderId());
-////
-	    ChatNotificationEvent event = new ChatNotificationEvent();
+		ChatNotificationEvent event = new ChatNotificationEvent();
 
-//	    event.setSenderId(message.getSenderId());
-//	    event.setReceiverId(message.getReceiverId());
-//	    event.setSenderName(sender.getUsername());
-//	    event.setSenderImage(sender.getLogoUrl());
-//	    event.setMessagePreview(message.getContent());
+		event.setSenderId(message.getSenderId());
+		event.setReceiverId(message.getReceiverId());
 
-	    notificationProducer.sendNotification(event);
+		if (message.getConversation() != null) {
+			event.setConversationId(
+					message.getConversation().getConversationId()
+			);
+		}
+
+		event.setMessagePreview(message.getContent());
+
+		notificationProducer.sendNotification(event);
 	}
-	
-	
-	
+
 	@Transactional
 	public ChatMessageDTO createSystemMessage(
-	        String senderId,
-	        String receiverId,
-	        MessageType type,
-	        String title,
-	        String referenceId,
-	        String imageUrl,
-	        String metadataJson) {
+			String senderId,
+			String receiverId,
+			MessageType type,
+			String title,
+			String referenceId,
+			String imageUrl,
+			String metadataJson) {
 
-	    ChatMessageDTO dto = new ChatMessageDTO();
+		ChatMessageDTO dto = new ChatMessageDTO();
 
-	    dto.setSenderId(senderId);
-	    dto.setReceiverId(receiverId);
-	    dto.setText(title);
+		dto.setSenderId(senderId);
+		dto.setReceiverId(receiverId);
+		dto.setText(title);
+		dto.setMessageType(type);
+		dto.setReferenceId(referenceId);
+		dto.setMediaUrl(imageUrl);
+		dto.setMetadataJson(metadataJson);
 
-	    dto.setMessageType(type);
-
-	    dto.setReferenceId(referenceId);
-
-	    dto.setMediaUrl(imageUrl);
-
-	    dto.setMetadataJson(metadataJson);
-
-	    return saveMessage(dto);
+		return saveMessage(dto);
 	}
-	
-	
 }
+
