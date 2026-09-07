@@ -1,9 +1,11 @@
 package com.whoami.launch.consumer;
+
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
-import com.whoami.launch.dto.NotificationEvent;
+import com.locato.dto.ChatNotificationEvent;
 import com.whoami.launch.dto.NotificationRequest;
+import com.whoami.launch.enums.NotificationType;
 import com.whoami.launch.service.NotificationService;
 
 import lombok.RequiredArgsConstructor;
@@ -18,24 +20,22 @@ public class NotificationConsumer {
             topics = "notification-topic",
             groupId = "notification-group"
     )
-    public void consume(NotificationEvent event) {
+    public void consume(ChatNotificationEvent event) {
 
         NotificationRequest request = NotificationRequest.builder()
-                .userId(event.getUserId())
-                .title(event.getTitle())
-                .message(event.getMessage())
-                .imageUrl(event.getImageUrl())
-                .targetId(event.getTargetId())
-                .targetType(event.getTargetType())
-                .type(event.getType())
-                .sendPush(event.getSendPush())
-                .metadataJson(event.getMetadataJson())
-                .actionsJson(event.getActionsJson())
-                .deepLink(event.getDeepLink())
+                .userId(event.getReceiverId())
+                .title("New Chat Message")
+                .message(event.getMessagePreview())
+                .imageUrl(event.getSenderImage())
+                .targetId(event.getConversationId())
+                .targetType("CHAT")
+                .type(NotificationType.CHAT)
+                .sendPush(true)
+                .metadataJson(null)
+                .actionsJson(null)
+                .deepLink(null)
                 .build();
 
-        
-        
         notificationService.createNotification(request);
     }
 }
