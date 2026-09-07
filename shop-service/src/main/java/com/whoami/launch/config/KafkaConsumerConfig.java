@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,16 +36,43 @@ public class KafkaConsumerConfig {
                 System.getenv().getOrDefault("KAFKA_SERVERS", "kafka:9092")
         );
 
+        props.put(
+                "security.protocol",
+                SecurityProtocol.SASL_PLAINTEXT.name()
+        );
+
+        props.put(
+                SaslConfigs.SASL_MECHANISM,
+                "SCRAM-SHA-512"
+        );
+
+        String username = System.getenv("KAFKA_USERNAME");
+        String password = System.getenv("KAFKA_PASSWORD");
+
+        props.put(
+                SaslConfigs.SASL_JAAS_CONFIG,
+                "org.apache.kafka.common.security.scram.ScramLoginModule required "
+                        + "username=\"" + username + "\" "
+                        + "password=\"" + password + "\";"
+        );
+
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "shop-group");
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-                StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                JsonDeserializer.class);
+
+        props.put(
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                StringDeserializer.class
+        );
+
+        props.put(
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                JsonDeserializer.class
+        );
 
         return new DefaultKafkaConsumerFactory<>(
                 props,
                 new StringDeserializer(),
-                deserializer);
+                deserializer
+        );
     }
 
     @Bean
