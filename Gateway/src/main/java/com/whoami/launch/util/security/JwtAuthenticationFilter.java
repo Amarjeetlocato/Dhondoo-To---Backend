@@ -95,36 +95,50 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
         }
 
         // ====================================
-        // GET AUTH HEADER
-        // ====================================
-        String authHeader = exchange
-                .getRequest()
-                .getHeaders()
-                .getFirst(HttpHeaders.AUTHORIZATION);
+// GET JWT TOKEN
+// ====================================
+String token = null;
 
-        System.out.println(
-                "AUTH HEADER = " + authHeader
-        );
+// ------------------------------------
+// NORMAL HTTP APIs
+// Authorization: Bearer <JWT>
+// ------------------------------------
+String authHeader = exchange
+        .getRequest()
+        .getHeaders()
+        .getFirst(HttpHeaders.AUTHORIZATION);
 
-        // ====================================
-        // TOKEN MISSING
-        // ====================================
-        if (
-                authHeader == null
-                        || !authHeader.startsWith("Bearer ")
-        ) {
+if (authHeader != null && authHeader.startsWith("Bearer ")) {
+    token = authHeader.substring(7);
+}
 
-            return writeErrorResponse(
-                    exchange,
-                    HttpStatus.UNAUTHORIZED,
-                    "Authorizations token is missing"
-            );
-        }
+// ------------------------------------
+// WEBSOCKET
+// /ws?token=<JWT>
+// ------------------------------------
+if (token == null && "/ws".equals(path)) {
 
-        // ====================================
-        // EXTRACT TOKEN
-        // ====================================
-        String token = authHeader.substring(7);
+    token = exchange.getRequest()
+            .getQueryParams()
+            .getFirst("token");
+
+    System.out.println(
+            "WEBSOCKET TOKEN FOUND = "
+                    + (token != null ? "YES" : "NO")
+    );
+}
+
+// ------------------------------------
+// TOKEN MISSING
+// ------------------------------------
+if (token == null || token.isBlank()) {
+
+    return writeErrorResponse(
+            exchange,
+            HttpStatus.UNAUTHORIZED,
+            "Authorization token is missing"
+    );
+}
 
         try {
 
