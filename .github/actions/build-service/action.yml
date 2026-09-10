@@ -83,8 +83,8 @@ runs:
     - name: Build and Push Image
       uses: docker/build-push-action@v6
       with:
-        context: .
-        file: ${{ inputs.dockerfile }}
+        context: ${{ inputs.module }}
+        file: ${{ inputs.module }}/Dockerfile
         push: true
 
         tags: |
