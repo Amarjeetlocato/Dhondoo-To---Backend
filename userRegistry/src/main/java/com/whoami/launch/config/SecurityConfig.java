@@ -69,7 +69,8 @@ public class SecurityConfig {
                     // Preflight requests
                     .requestMatchers(
         "/actuator/health",
-                     "/actuator/health/**"
+                     "/actuator/health/**",
+                            "/actuator/prometheus"
                     ).permitAll()
                     // Protected APIs
                     .anyRequest().authenticated()
