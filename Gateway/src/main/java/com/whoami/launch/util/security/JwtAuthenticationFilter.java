@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
                 path.equals("/actuator/health")
                 || path.equals("/actuator/health/liveness")
                 || path.equals("/actuator/health/readiness")
-
+                || path.equals("/actuator/prometheus")
                 // --------------------------------
                 // AUTH APIs
                 // --------------------------------
