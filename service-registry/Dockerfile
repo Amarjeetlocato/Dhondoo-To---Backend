@@ -3,10 +3,9 @@ FROM maven:3.9.9-eclipse-temurin-21 AS builder
 
 WORKDIR /app
 
-COPY pom.xml .
-COPY src ./src/
+COPY . .
 
-RUN mvn -B clean package -DskipTests
+RUN mvn -B clean package -DskipTests -pl service-registry -am
 
 # Runtime stage
 FROM eclipse-temurin:21-jre
@@ -16,8 +15,7 @@ WORKDIR /app
 # Create a non-root user
 RUN groupadd -r spring && useradd -r -g spring spring
 
-COPY --from=builder /app/target/*.jar app.jar
-
+COPY --from=builder /app/service-registry/target/*.jar app.jar
 # Make the application readable
 RUN chown spring:spring /app/app.jar
 
