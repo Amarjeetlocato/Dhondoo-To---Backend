@@ -36,6 +36,11 @@
 
         <module>Servicechat</module>
 
+        <module>BillingService</module>
+
+        <!-- Business lifecycle, verification and operations -->
+        <module>BusinessOperationService</module>
+
         <!-- <module>SuperUSer</module> -->
 
     </modules>
@@ -79,7 +84,7 @@
     </properties>
 
     <!-- ===================================================== -->
-    <!-- Dependency Management -->
+    <!-- DEPENDENCY MANAGEMENT -->
     <!-- ===================================================== -->
 
     <dependencyManagement>
@@ -119,7 +124,7 @@
     </dependencyManagement>
 
     <!-- ===================================================== -->
-    <!-- Build -->
+    <!-- BUILD -->
     <!-- ===================================================== -->
 
     <build>

@@ -6,7 +6,11 @@ COPY . .
 
 RUN mvn -B clean package -DskipTests -q
 
+
+# ============================================================
 # Eureka Service
+# ============================================================
+
 FROM eclipse-temurin:21-jre AS eureka
 
 WORKDIR /app
@@ -17,7 +21,11 @@ EXPOSE 8761
 
 ENTRYPOINT ["java","-jar","app.jar"]
 
+
+# ============================================================
 # User Registry Service
+# ============================================================
+
 FROM eclipse-temurin:21-jre AS user-registry
 
 WORKDIR /app
@@ -28,7 +36,11 @@ EXPOSE 8080
 
 ENTRYPOINT ["java","-jar","app.jar"]
 
+
+# ============================================================
 # Shop Service
+# ============================================================
+
 FROM eclipse-temurin:21-jre AS shop-service
 
 WORKDIR /app
@@ -39,7 +51,11 @@ EXPOSE 8084
 
 ENTRYPOINT ["java","-jar","app.jar"]
 
+
+# ============================================================
 # Service Chat
+# ============================================================
+
 FROM eclipse-temurin:21-jre AS service-chat
 
 WORKDIR /app
@@ -50,7 +66,11 @@ EXPOSE 8085
 
 ENTRYPOINT ["java","-jar","app.jar"]
 
+
+# ============================================================
 # Order Service
+# ============================================================
+
 FROM eclipse-temurin:21-jre AS order-service
 
 WORKDIR /app
@@ -61,7 +81,11 @@ EXPOSE 8086
 
 ENTRYPOINT ["java","-jar","app.jar"]
 
+
+# ============================================================
 # Notification Service
+# ============================================================
+
 FROM eclipse-temurin:21-jre AS notification-service
 
 WORKDIR /app
@@ -72,7 +96,11 @@ EXPOSE 8087
 
 ENTRYPOINT ["java","-jar","app.jar"]
 
+
+# ============================================================
 # Super User Service
+# ============================================================
+
 # FROM eclipse-temurin:21-jre AS super-user
 
 # WORKDIR /app
@@ -83,7 +111,11 @@ ENTRYPOINT ["java","-jar","app.jar"]
 
 # ENTRYPOINT ["java","-jar","app.jar"]
 
+
+# ============================================================
 # Gateway Service
+# ============================================================
+
 FROM eclipse-temurin:21-jre AS gateway
 
 WORKDIR /app
@@ -91,5 +123,35 @@ WORKDIR /app
 COPY --from=builder /app/Gateway/target/*.jar app.jar
 
 EXPOSE 8079
+
+ENTRYPOINT ["java","-jar","app.jar"]
+
+
+# ============================================================
+# Billing Service
+# ============================================================
+
+FROM eclipse-temurin:21-jre AS billing-service
+
+WORKDIR /app
+
+COPY --from=builder /app/BillingService/target/*.jar app.jar
+
+EXPOSE 8089
+
+ENTRYPOINT ["java","-jar","app.jar"]
+
+
+# ============================================================
+# Business Operation Service
+# ============================================================
+
+FROM eclipse-temurin:21-jre AS business-operation-service
+
+WORKDIR /app
+
+COPY --from=builder /app/BusinessOperationService/target/*.jar app.jar
+
+EXPOSE 8090
 
 ENTRYPOINT ["java","-jar","app.jar"]
