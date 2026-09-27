@@ -1,0 +1,19 @@
+package com.whoami.businessoperation.domain.enums;
+
+public enum VerificationAction {
+
+    SUBMITTED,
+    STARTED,
+    DOCUMENT_SUBMITTED,
+    DOCUMENT_APPROVED,
+    DOCUMENT_REJECTED,
+    VIDEO_SUBMITTED,
+    VIDEO_APPROVED,
+    VIDEO_REJECTED,
+    ADDITIONAL_INFORMATION_REQUESTED,
+    REUPLOAD_REQUESTED,
+    APPROVED,
+    REJECTED,
+    EXPIRED,
+    REOPENED, VERIFICATION_SUBMITTED
+}
