@@ -1,17 +1,24 @@
 package com.whoami.businessoperation.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.whoami.businessoperation.dto.request.ReviewVerificationRequest;
 import com.whoami.businessoperation.dto.request.SubmitVerificationRequest;
 import com.whoami.businessoperation.dto.response.BusinessVerificationResponse;
 import com.whoami.businessoperation.service.BusinessVerificationService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/business-operations/verifications")
@@ -22,8 +29,8 @@ public class BusinessVerificationController {
 
     @PostMapping
     public ResponseEntity<BusinessVerificationResponse> createVerification(
-            @RequestParam UUID businessId,
-            @RequestParam UUID applicationId) {
+            @RequestParam String businessId,
+            @RequestParam String applicationId) {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -37,7 +44,7 @@ public class BusinessVerificationController {
 
     @GetMapping("/{businessId}")
     public ResponseEntity<BusinessVerificationResponse> getVerification(
-            @PathVariable UUID businessId) {
+            @PathVariable String businessId) {
 
         return ResponseEntity.ok(
                 businessVerificationService.getVerification(businessId)
@@ -66,7 +73,7 @@ public class BusinessVerificationController {
 
     @GetMapping("/{businessId}/history")
     public ResponseEntity<List<?>> getVerificationHistory(
-            @PathVariable UUID businessId) {
+            @PathVariable String businessId) {
 
         return ResponseEntity.ok(
                 businessVerificationService

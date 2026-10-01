@@ -1,21 +1,22 @@
 package com.whoami.launch.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
 @Table(
-    name = "reel_likes",
-    uniqueConstraints = {
-        @UniqueConstraint(
-            columnNames = {
-                "user_id",
-                "reel_id"
-            }
-        )
-    }
+        name = "reel_likes",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = {
+                                "user_id",
+                                "reel_id"
+                        }
+                )
+        }
 )
 @Data
 public class ReelLike {
@@ -24,10 +25,19 @@ public class ReelLike {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(
+            name = "like_id",
+            unique = true,
+            nullable = false,
+            updatable = false,
+            length = 30
+    )
+    private String likeId;
+
+    @Column(name = "user_id", nullable = false, length = 30)
     private String userId;
 
-    @Column(name = "reel_id", nullable = false)
+    @Column(name = "reel_id", nullable = false, length = 30)
     private String reelId;
 
     @Column(name = "created_at", nullable = false)
@@ -35,8 +45,18 @@ public class ReelLike {
 
     @PrePersist
     public void prePersist() {
-        createdAt = LocalDateTime.now();
-    }
 
-    // Getters and Setters
+        if (likeId == null) {
+            likeId = "REEL_LIKE_" +
+                    UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            .substring(0, 12)
+                            .toUpperCase();
+        }
+
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }

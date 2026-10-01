@@ -1,18 +1,26 @@
 package com.whoami.businessoperation.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.whoami.businessoperation.dto.request.CreateBusinessApplicationRequest;
 import com.whoami.businessoperation.dto.request.SubmitBusinessApplicationRequest;
 import com.whoami.businessoperation.dto.request.UpdateBusinessApplicationRequest;
 import com.whoami.businessoperation.dto.response.BusinessApplicationResponse;
 import com.whoami.businessoperation.service.BusinessApplicationService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/business-operations/applications")
@@ -34,7 +42,7 @@ public class BusinessApplicationController {
 
     @GetMapping("/{businessId}")
     public ResponseEntity<BusinessApplicationResponse> getApplication(
-            @PathVariable UUID businessId) {
+            @PathVariable String businessId) {
 
         return ResponseEntity.ok(
                 businessApplicationService.getApplication(businessId)
@@ -44,7 +52,7 @@ public class BusinessApplicationController {
     @GetMapping("/owner/{ownerUserId}")
     public ResponseEntity<List<BusinessApplicationResponse>>
     getApplicationsByOwner(
-            @PathVariable UUID ownerUserId) {
+            @PathVariable String ownerUserId) {
 
         return ResponseEntity.ok(
                 businessApplicationService
@@ -54,7 +62,7 @@ public class BusinessApplicationController {
 
     @PutMapping("/{businessId}")
     public ResponseEntity<BusinessApplicationResponse> updateApplication(
-            @PathVariable UUID businessId,
+            @PathVariable String businessId,
             @Valid @RequestBody UpdateBusinessApplicationRequest request) {
 
         return ResponseEntity.ok(
@@ -76,8 +84,8 @@ public class BusinessApplicationController {
 
     @PostMapping("/{businessId}/approve")
     public ResponseEntity<BusinessApplicationResponse> approveApplication(
-            @PathVariable UUID businessId,
-            @RequestParam UUID performedBy) {
+            @PathVariable String businessId,
+            @RequestParam String performedBy) {
 
         return ResponseEntity.ok(
                 businessApplicationService.approveApplication(
@@ -89,8 +97,8 @@ public class BusinessApplicationController {
 
     @PostMapping("/{businessId}/reject")
     public ResponseEntity<BusinessApplicationResponse> rejectApplication(
-            @PathVariable UUID businessId,
-            @RequestParam UUID performedBy,
+            @PathVariable String businessId,
+            @RequestParam String performedBy,
             @RequestParam String reason) {
 
         return ResponseEntity.ok(

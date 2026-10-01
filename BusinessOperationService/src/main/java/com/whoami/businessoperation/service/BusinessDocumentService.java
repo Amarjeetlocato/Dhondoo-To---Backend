@@ -14,21 +14,21 @@ public interface BusinessDocumentService {
     );
 
     BusinessDocumentResponse getDocument(
-            UUID documentId
+    		String documentId
     );
 
     List<BusinessDocumentResponse> getBusinessDocuments(
-            UUID businessId
+    		String businessId
     );
 
     BusinessDocumentResponse updateDocumentStatus(
-            UUID documentId,
+    		String documentId,
             DocumentStatus status,
             String rejectionReason,
-            UUID reviewedBy
+            String reviewedBy
     );
 
     void deleteDocument(
-            UUID documentId
+    		String documentId
     );
 }

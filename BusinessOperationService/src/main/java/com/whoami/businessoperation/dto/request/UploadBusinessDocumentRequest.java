@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -15,11 +14,11 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UploadBusinessDocumentRequest {
 
-    @NotNull(message = "Business ID is required")
-    private UUID businessId;
+    @NotBlank(message = "Business ID is required")
+    private String businessId;
 
-    @NotNull(message = "Application ID is required")
-    private UUID applicationId;
+    @NotBlank(message = "Application ID is required")
+    private String applicationId;
 
     @NotNull(message = "Document type is required")
     private DocumentType documentType;

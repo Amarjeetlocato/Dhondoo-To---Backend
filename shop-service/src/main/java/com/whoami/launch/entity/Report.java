@@ -1,6 +1,7 @@
 package com.whoami.launch.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import com.whoami.launch.enums.ReportReason;
 import com.whoami.launch.enums.ReportStatus;
@@ -18,14 +19,32 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "reported_by", nullable = false)
-    private String reportedBy;
+    @Column(
+            name = "report_id",
+            unique = true,
+            nullable = false,
+            updatable = false,
+            length = 30
+    )
+    private String reportId;
+
+    /**
+     * Business context of the reported content.
+     */
+    @Column(name = "business_id", length = 30)
+    private String businessId;
+
+    /**
+     * User who submitted the report.
+     */
+    @Column(name = "user_id", nullable = false, length = 30)
+    private String userId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "target_type", nullable = false)
     private ReportTargetType targetType;
 
-    @Column(name = "target_id", nullable = false)
+    @Column(name = "target_id", nullable = false, length = 50)
     private String targetId;
 
     @Enumerated(EnumType.STRING)
@@ -44,8 +63,18 @@ public class Report {
 
     @PrePersist
     public void prePersist() {
-        createdAt = LocalDateTime.now();
-    }
 
-    // Getters and Setters
+        if (reportId == null) {
+            reportId = "REPORT_" +
+                    UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            .substring(0, 12)
+                            .toUpperCase();
+        }
+
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }

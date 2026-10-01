@@ -1,16 +1,13 @@
 package com.whoami.launch.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 
-import lombok.*;
-
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Data
 public class CreateNotificationRequest {
 
-    private Long userId;
-    private String title;
-    private String message;
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    private String email;
 }

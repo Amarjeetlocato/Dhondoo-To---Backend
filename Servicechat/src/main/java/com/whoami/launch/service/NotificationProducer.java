@@ -1,20 +1,9 @@
 package com.whoami.launch.service;
 
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Service;
+import com.locato.constants.events.chat.ChatNotificationEvent;
 
-import com.locato.dto.ChatNotificationEvent;
-import com.whoami.launch.dto.NotificationEvent;
+public interface NotificationProducer {
 
-import lombok.RequiredArgsConstructor;
-
-@Service
-@RequiredArgsConstructor
-public class NotificationProducer {
-
-    private final KafkaTemplate<String, ChatNotificationEvent> kafkaTemplate;
-
-    public void sendNotification(ChatNotificationEvent event) {
-        kafkaTemplate.send("notification-topic", event);
-    }
+    void sendNotification(
+            ChatNotificationEvent event);
 }

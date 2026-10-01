@@ -1,9 +1,5 @@
 package com.whoami.launch.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import com.whoami.launch.dto.ApiResponse;
 import com.whoami.launch.dto.PageResponse;
 import com.whoami.launch.dto.ReviewRequest;
@@ -11,24 +7,25 @@ import com.whoami.launch.dto.ReviewResponse;
 import com.whoami.launch.dto.ReviewStatsResponse;
 import com.whoami.launch.enums.ReviewTargetType;
 import com.whoami.launch.service.ReviewService;
-
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
+@RequestMapping("/api")
 public class ReviewController {
 
-    @Autowired
-    private ReviewService reviewService;
+    private final ReviewService reviewService;
 
-    @PostMapping("/api/users/{userId}/reviews")
+    @PostMapping("/users/{userId}/reviews")
     public ResponseEntity<ApiResponse<ReviewResponse>> createReview(
             @PathVariable String userId,
             @Valid @RequestBody ReviewRequest request) {
 
         ReviewResponse response =
-                reviewService.createReview(
-                        userId,
-                        request);
+                reviewService.createReview(userId, request);
 
         return ResponseEntity.ok(
                 ApiResponse.success(
@@ -36,10 +33,10 @@ public class ReviewController {
                         response));
     }
 
-    @PutMapping("/api/users/{userId}/reviews/{reviewId}")
+    @PutMapping("/users/{userId}/reviews/{reviewId}")
     public ResponseEntity<ApiResponse<ReviewResponse>> updateReview(
             @PathVariable String userId,
-            @PathVariable Long reviewId,
+            @PathVariable String reviewId,
             @Valid @RequestBody ReviewRequest request) {
 
         ReviewResponse response =
@@ -54,10 +51,10 @@ public class ReviewController {
                         response));
     }
 
-    @DeleteMapping("/api/users/{userId}/reviews/{reviewId}")
+    @DeleteMapping("/users/{userId}/reviews/{reviewId}")
     public ResponseEntity<ApiResponse<String>> deleteReview(
             @PathVariable String userId,
-            @PathVariable Long reviewId) {
+            @PathVariable String reviewId) {
 
         reviewService.deleteReview(
                 userId,
@@ -69,7 +66,7 @@ public class ReviewController {
                         "SUCCESS"));
     }
 
-    @GetMapping("/api/reviews")
+    @GetMapping("/reviews")
     public ResponseEntity<ApiResponse<PageResponse<ReviewResponse>>> getReviews(
             @RequestParam ReviewTargetType targetType,
             @RequestParam String targetId,
@@ -89,7 +86,7 @@ public class ReviewController {
                         response));
     }
 
-    @GetMapping("/api/reviews/stats")
+    @GetMapping("/reviews/stats")
     public ResponseEntity<ApiResponse<ReviewStatsResponse>> getReviewStats(
             @RequestParam ReviewTargetType targetType,
             @RequestParam String targetId) {
@@ -105,10 +102,6 @@ public class ReviewController {
                         response));
     }
 
-    /**
-     * Internal API
-     * Called by Order Service when Product Order completed
-     */
     @PostMapping("/internal-api/reviews/verify/product")
     public ResponseEntity<ApiResponse<String>> verifyProductReview(
             @RequestParam String userId,
@@ -126,10 +119,6 @@ public class ReviewController {
                         "SUCCESS"));
     }
 
-    /**
-     * Internal API
-     * Called by Order Service when Service Booking completed
-     */
     @PostMapping("/internal-api/reviews/verify/service")
     public ResponseEntity<ApiResponse<String>> verifyServiceReview(
             @RequestParam String userId,

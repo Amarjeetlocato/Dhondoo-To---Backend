@@ -1,20 +1,22 @@
 package com.whoami.launch.repository;
 
-import java.util.Optional;
-
+import com.whoami.launch.entity.CustomerProfile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.whoami.launch.entity.CustomerProfile;
+import java.util.Optional;
 
 @Repository
-public interface CustomerProfileRepository extends JpaRepository<CustomerProfile, String> {
+public interface CustomerProfileRepository
+        extends JpaRepository<CustomerProfile, Long> {
+
     Optional<CustomerProfile> findByUserId(String userId);
+
     boolean existsByUserId(String userId);
-    Optional<CustomerProfile> findByUsername(String username);
+
     Optional<CustomerProfile> findByEmail(String email);
+
     Page<CustomerProfile> findAll(Pageable pageable);
-    
 }

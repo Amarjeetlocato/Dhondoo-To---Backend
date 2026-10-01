@@ -1,9 +1,7 @@
 package com.whoami.businessoperation.dto.request;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -12,6 +10,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class SubmitBusinessApplicationRequest {
 
-    @NotNull(message = "Business ID is required")
-    private UUID businessId;
+    @NotBlank(message = "Business ID is required")
+    private String businessId;
 }

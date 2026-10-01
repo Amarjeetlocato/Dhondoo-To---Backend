@@ -1,15 +1,17 @@
 package com.whoami.launch.repository;
 
+import com.whoami.launch.entity.ReelComment;
+import com.whoami.launch.enums.CommentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.whoami.launch.entity.ReelComment;
-import com.whoami.launch.enums.CommentStatus;
+import java.util.Optional;
 
 @Repository
-public interface ReelCommentRepository extends JpaRepository<ReelComment, Long> {
+public interface ReelCommentRepository
+        extends JpaRepository<ReelComment, Long> {
 
     Page<ReelComment> findByReelIdAndStatus(
             String reelId,
@@ -19,4 +21,7 @@ public interface ReelCommentRepository extends JpaRepository<ReelComment, Long> 
     long countByReelIdAndStatus(
             String reelId,
             CommentStatus status);
+
+    Optional<ReelComment> findByCommentId(
+            String commentId);
 }

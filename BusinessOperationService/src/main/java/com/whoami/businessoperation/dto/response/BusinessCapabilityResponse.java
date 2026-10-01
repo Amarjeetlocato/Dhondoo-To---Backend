@@ -5,7 +5,6 @@ import com.whoami.businessoperation.domain.enums.CapabilityType;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -14,17 +13,17 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BusinessCapabilityResponse {
 
-    private UUID id;
+    private String capabilityId;
 
-    private UUID businessId;
+    private String businessId;
 
     private CapabilityType capabilityType;
 
     private CapabilityStatus capabilityStatus;
 
-    private UUID enabledBy;
+    private String enabledBy;
 
-    private UUID disabledBy;
+    private String disabledBy;
 
     private String reason;
 

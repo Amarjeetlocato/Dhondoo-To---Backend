@@ -1,8 +1,16 @@
 package com.whoami.launch.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,72 +21,135 @@ import lombok.Setter;
 @Setter
 public class User {
 
+    /**
+     * Internal database primary key.
+     * Not shared between microservices.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column(unique = true, nullable = false, updatable = false)
+
+    /**
+     * Public/system identity used across microservices.
+     * Example: USER_A7K92M4X
+     */
+    @Column(
+            unique = true,
+            nullable = false,
+            updatable = false,
+            length = 30
+    )
     private String userId;
 
-    @Column(unique = true, nullable = false,length = 50)
-    private String username;
-
+    /**
+     * User's full name.
+     */
     @Column(
+            name = "full_name",
             nullable = false,
-            unique = true,
             length = 100
+    )
+    private String fullName;
+
+    /**
+     * Login identity.
+     */
+    @Column(
+            unique = true,
+            nullable = false,
+            length = 150
     )
     private String email;
 
-    @Column(nullable = false, length = 100)
+    /**
+     * Encoded password.
+     */
+    @Column(
+            nullable = false,
+            length = 255
+    )
     private String password;
 
+    /**
+     * User account/email verification status.
+     *
+     * This is NOT business verification.
+     */
+    @Column(nullable = false)
     private boolean verified = false;
 
+    /**
+     * Registration/login OTP.
+     */
     @Column(length = 100)
     private String otp;
 
     private LocalDateTime otpExpiry;
 
+    /**
+     * Login account lock status.
+     */
+    @Column(nullable = false)
     private boolean accountNonLocked = true;
 
+    @Column(nullable = false)
     private int failedLoginAttempts = 0;
 
     private LocalDateTime lockTime;
 
+    /**
+     * Password reset OTP.
+     */
+    @Column(name = "reset_otp", length = 100)
+    private String resetOtp;
+
+    private LocalDateTime resetOtpExpiry;
+
+    @Column(nullable = false)
+    private Boolean resetOtpVerified = false;
+
+    /**
+     * Soft delete.
+     */
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
+
+    private LocalDateTime deletedAt;
+
+    /**
+     * Audit timestamps.
+     */
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
-    public void prePersist() {
-    	if (userId == null) {
-            userId = "USER_" + java.util.UUID.randomUUID()
-                    .toString()
-                    .replace("-", "")
-                    .substring(0, 12)
-                    .toUpperCase();
+    protected void prePersist() {
+
+        if (userId == null) {
+            userId = "USER_" +
+                    UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            .substring(0, 12)
+                            .toUpperCase();
         }
-        createdAt = LocalDateTime.now();
+
+        LocalDateTime now = LocalDateTime.now();
+
+        if (createdAt == null) {
+            createdAt = now;
+        }
+
+        if (updatedAt == null) {
+            updatedAt = now;
+        }
     }
 
     @PreUpdate
-    public void preUpdate() {
+    protected void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
-    
-    @Column(name = "reset_otp")
-    private String resetOtp;
-
-    @Column(name = "reset_otp_expiry")
-    private LocalDateTime resetOtpExpiry;
-
-    @Column(name = "reset_otp_verified")
-    private Boolean resetOtpVerified = false;
-    
-    @Column(name = "is_deleted")
-    private boolean deleted = false;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
 }

@@ -10,24 +10,26 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface BusinessDocumentRepository
-        extends JpaRepository<BusinessDocument, UUID> {
+        extends JpaRepository<BusinessDocument, Long> {
 
-    List<BusinessDocument> findByBusinessId(UUID businessId);
+    List<BusinessDocument> findByBusinessId(String businessId);
 
-    List<BusinessDocument> findByApplicationId(UUID applicationId);
+    List<BusinessDocument> findByApplicationId(String applicationId);
 
     List<BusinessDocument> findByBusinessIdAndDocumentStatus(
-            UUID businessId,
+    		String businessId,
             DocumentStatus documentStatus
     );
 
     Optional<BusinessDocument> findByBusinessIdAndDocumentType(
-            UUID businessId,
+    		String businessId,
             DocumentType documentType
     );
 
     boolean existsByBusinessIdAndDocumentType(
-            UUID businessId,
+    		String businessId,
             DocumentType documentType
     );
+
+	Optional<BusinessDocument> findByDocumentId(String documentId);
 }

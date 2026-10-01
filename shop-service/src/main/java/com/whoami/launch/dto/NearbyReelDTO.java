@@ -8,9 +8,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NearbyReelDTO {
+
     private String reelId;
-    private String shopId;
+
+    private String businessId;
+
     private String reelVideo;
     private String reelDescription;
+
     private Double distance;
 }

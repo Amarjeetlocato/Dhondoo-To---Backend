@@ -1,41 +1,37 @@
 package com.whoami.launch.order.orders.service.impl;
 
+import com.whoami.launch.order.orders.dto.AnalyticsSummaryDto;
+import com.whoami.launch.order.orders.dto.SalesItemDto;
+import com.whoami.launch.order.orders.entity.DailyBusinessAnalytics;
+import com.whoami.launch.order.orders.repository.AnalyticsTransactionRepository;
+import com.whoami.launch.order.orders.repository.DailyBusinessAnalyticsRepository;
+import com.whoami.launch.order.orders.service.AnalyticsService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.stereotype.Service;
-
-import com.whoami.launch.order.orders.dto.AnalyticsSummaryDto;
-import com.whoami.launch.order.orders.dto.SalesItemDto;
-import com.whoami.launch.order.orders.entity.DailyShopAnalytics;
-import com.whoami.launch.order.orders.repository.AnalyticsTransactionRepository;
-import com.whoami.launch.order.orders.repository.DailyShopAnalyticsRepository;
-import com.whoami.launch.order.orders.service.AnalyticsService;
-
-import lombok.RequiredArgsConstructor;
-
 @Service
 @RequiredArgsConstructor
-public class AnalyticsServiceImpl
-        implements AnalyticsService {
+public class AnalyticsServiceImpl implements AnalyticsService {
 
-    private final DailyShopAnalyticsRepository analyticsRepository;
+    private final DailyBusinessAnalyticsRepository analyticsRepository;
 
     private final AnalyticsTransactionRepository transactionRepository;
 
     @Override
     public AnalyticsSummaryDto getTodaySummary(
-            String shopId
-    ) {
+            String businessId) {
 
-        DailyShopAnalytics analytics =
+        DailyBusinessAnalytics analytics =
                 analyticsRepository
-                        .findByShopIdAndAnalyticsDate(
-                                shopId,
+                        .findByBusinessIdAndAnalyticsDate(
+                                businessId,
                                 LocalDate.now()
                         )
-                        .orElse(new DailyShopAnalytics());
+                        .orElse(new DailyBusinessAnalytics());
 
         return AnalyticsSummaryDto.builder()
                 .totalOrders(
@@ -55,30 +51,31 @@ public class AnalyticsServiceImpl
 
     @Override
     public List<SalesItemDto> getSalesByDate(
-            String shopId,
-            LocalDate date
-    ) {
+            String businessId,
+            LocalDate date) {
 
         LocalDateTime start =
                 date.atStartOfDay();
 
         LocalDateTime end =
-                date.atTime(23,59,59);
+                date.atTime(23, 59, 59);
 
         return transactionRepository
-                .findByShopIdAndSoldAtBetween(
-                        shopId,
+                .findByBusinessIdAndSoldAtBetween(
+                        businessId,
                         start,
                         end
                 )
                 .stream()
-                .map(tx -> SalesItemDto.builder()
-                        .itemName(tx.getItemName())
-                        .itemType(tx.getItemType())
-                        .quantity(tx.getQuantity())
-                        .amount(tx.getTotalAmount())
-                        .soldAt(tx.getSoldAt())
-                        .build())
+                .map(tx ->
+                        SalesItemDto.builder()
+                                .itemName(tx.getItemName())
+                                .itemType(tx.getItemType())
+                                .quantity(tx.getQuantity())
+                                .amount(tx.getTotalAmount())
+                                .soldAt(tx.getSoldAt())
+                                .build()
+                )
                 .toList();
     }
 }

@@ -22,11 +22,11 @@ public interface BusinessCapabilityService {
     );
 
     BusinessCapabilityResponse getCapability(
-            UUID businessId,
+    		String businessId,
             CapabilityType capabilityType
     );
 
     List<BusinessCapabilityResponse> getBusinessCapabilities(
-            UUID businessId
+    		String businessId
     );
 }

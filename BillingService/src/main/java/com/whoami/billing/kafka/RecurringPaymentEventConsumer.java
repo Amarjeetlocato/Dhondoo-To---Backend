@@ -1,7 +1,12 @@
 package com.whoami.billing.kafka;
 
-import com.locato.dto.billing.event.RecurringPaymentRequestedEvent;
-import com.locato.topics.BillingTopics;
+import java.util.UUID;
+
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
+
+import com.locato.constants.events.billing.RecurringPaymentRequestedEvent;
+import com.locato.constants.topics.KafkaTopics;
 import com.whoami.billing.domain.entity.Payment;
 import com.whoami.billing.domain.entity.PaymentGateway;
 import com.whoami.billing.dto.request.CreatePaymentRequest;
@@ -9,12 +14,9 @@ import com.whoami.billing.dto.response.PaymentResponse;
 import com.whoami.billing.repository.BillingTransactionRepository;
 import com.whoami.billing.repository.PaymentRepository;
 import com.whoami.billing.service.PaymentService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Slf4j
 @Component
@@ -26,7 +28,7 @@ public class RecurringPaymentEventConsumer {
     private final PaymentService paymentService;
 
     @KafkaListener(
-            topics = BillingTopics.RECURRING_PAYMENT_REQUESTED,
+            topics = KafkaTopics.BILLING_EVENTS,
             groupId = "${spring.kafka.consumer.group-id}-recurring-payment",
             containerFactory = "recurringPaymentKafkaListenerContainerFactory"
     )

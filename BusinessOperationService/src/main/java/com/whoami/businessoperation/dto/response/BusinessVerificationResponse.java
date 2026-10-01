@@ -4,7 +4,6 @@ import com.whoami.businessoperation.domain.enums.VerificationStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -13,11 +12,11 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BusinessVerificationResponse {
 
-    private UUID id;
+    private String verificationId;
 
-    private UUID businessId;
+    private String businessId;
 
-    private UUID applicationId;
+    private String applicationId;
 
     private VerificationStatus verificationStatus;
 
@@ -27,7 +26,7 @@ public class BusinessVerificationResponse {
 
     private String reviewerComment;
 
-    private UUID reviewedBy;
+    private String reviewedBy;
 
     private LocalDateTime startedAt;
 

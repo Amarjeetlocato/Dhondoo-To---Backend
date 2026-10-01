@@ -7,8 +7,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.locato.constants.events.BusinessEvent;
-import com.locato.constants.events.BusinessEventType;
+import com.locato.constants.events.businessoperation.ApplicationCreatedEvent;
+import com.locato.constants.events.businessoperation.BusinessOperationEventType;
 import com.whoami.businessoperation.domain.entity.BusinessApplication;
 import com.whoami.businessoperation.domain.enums.AuditAction;
 import com.whoami.businessoperation.domain.enums.BusinessApplicationStatus;
@@ -103,7 +103,7 @@ public class BusinessApplicationServiceImpl
 
         businessAuditService.log(
                 saved.getBusinessId(),
-                saved.getId(),
+                saved.getApplicationId(),
                 AuditAction.APPLICATION_CREATED,
                 saved.getOwnerUserId(),
                 "BUSINESS_OWNER",
@@ -112,14 +112,7 @@ public class BusinessApplicationServiceImpl
                 null
         );
 
-        publishEvent(
-                BusinessEventType.APPLICATION_CREATED,
-                saved,
-                saved.getOwnerUserId(),
-                "BUSINESS_OWNER",
-                "Business application created",
-                null
-        );
+        publishApplicationCreatedEvent(saved);
 
         return mapToResponse(saved);
     }
@@ -127,16 +120,10 @@ public class BusinessApplicationServiceImpl
     @Override
     @Transactional(readOnly = true)
     public BusinessApplicationResponse getApplication(
-            UUID businessId) {
+            String businessId) {
 
         BusinessApplication application =
-                businessApplicationRepository
-                        .findByBusinessId(businessId)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "Business application not found for businessId: "
-                                                + businessId
-                                ));
+                getApplicationEntity(businessId);
 
         return mapToResponse(application);
     }
@@ -144,7 +131,7 @@ public class BusinessApplicationServiceImpl
     @Override
     @Transactional(readOnly = true)
     public List<BusinessApplicationResponse> getApplicationsByOwner(
-            UUID ownerUserId) {
+            String ownerUserId) {
 
         return businessApplicationRepository
                 .findByOwnerUserId(ownerUserId)
@@ -155,7 +142,7 @@ public class BusinessApplicationServiceImpl
 
     @Override
     public BusinessApplicationResponse updateApplication(
-            UUID businessId,
+            String businessId,
             UpdateBusinessApplicationRequest request) {
 
         BusinessApplication application =
@@ -225,7 +212,7 @@ public class BusinessApplicationServiceImpl
 
         businessAuditService.log(
                 saved.getBusinessId(),
-                saved.getId(),
+                saved.getApplicationId(),
                 AuditAction.SYSTEM_ACTION,
                 saved.getOwnerUserId(),
                 "BUSINESS_OWNER",
@@ -270,7 +257,7 @@ public class BusinessApplicationServiceImpl
 
         businessAuditService.log(
                 saved.getBusinessId(),
-                saved.getId(),
+                saved.getApplicationId(),
                 AuditAction.APPLICATION_SUBMITTED,
                 saved.getOwnerUserId(),
                 "BUSINESS_OWNER",
@@ -279,8 +266,8 @@ public class BusinessApplicationServiceImpl
                 null
         );
 
-        publishEvent(
-                BusinessEventType.APPLICATION_SUBMITTED,
+        publishApplicationEvent(
+                BusinessOperationEventType.APPLICATION_SUBMITTED,
                 saved,
                 saved.getOwnerUserId(),
                 "BUSINESS_OWNER",
@@ -293,9 +280,9 @@ public class BusinessApplicationServiceImpl
 
     @Override
     public BusinessApplicationResponse rejectApplication(
-            UUID businessId,
+            String businessId,
             String reason,
-            UUID performedBy) {
+            String performedBy) {
 
         BusinessApplication application =
                 getApplicationEntity(businessId);
@@ -319,7 +306,7 @@ public class BusinessApplicationServiceImpl
 
         businessAuditService.log(
                 saved.getBusinessId(),
-                saved.getId(),
+                saved.getApplicationId(),
                 AuditAction.BUSINESS_REJECTED,
                 performedBy,
                 "ADMIN",
@@ -328,8 +315,8 @@ public class BusinessApplicationServiceImpl
                 null
         );
 
-        publishEvent(
-                BusinessEventType.BUSINESS_REJECTED,
+        publishApplicationEvent(
+                BusinessOperationEventType.BUSINESS_REJECTED,
                 saved,
                 performedBy,
                 "ADMIN",
@@ -342,8 +329,8 @@ public class BusinessApplicationServiceImpl
 
     @Override
     public BusinessApplicationResponse approveApplication(
-            UUID businessId,
-            UUID performedBy) {
+            String businessId,
+            String performedBy) {
 
         BusinessApplication application =
                 getApplicationEntity(businessId);
@@ -377,7 +364,7 @@ public class BusinessApplicationServiceImpl
 
         businessAuditService.log(
                 saved.getBusinessId(),
-                saved.getId(),
+                saved.getApplicationId(),
                 AuditAction.BUSINESS_APPROVED,
                 performedBy,
                 "ADMIN",
@@ -388,7 +375,7 @@ public class BusinessApplicationServiceImpl
 
         businessAuditService.log(
                 saved.getBusinessId(),
-                saved.getId(),
+                saved.getApplicationId(),
                 AuditAction.BUSINESS_ACTIVATED,
                 performedBy,
                 "ADMIN",
@@ -397,8 +384,8 @@ public class BusinessApplicationServiceImpl
                 null
         );
 
-        publishEvent(
-                BusinessEventType.BUSINESS_APPROVED,
+        publishApplicationEvent(
+                BusinessOperationEventType.BUSINESS_APPROVED,
                 saved,
                 performedBy,
                 "ADMIN",
@@ -406,8 +393,8 @@ public class BusinessApplicationServiceImpl
                 null
         );
 
-        publishEvent(
-                BusinessEventType.BUSINESS_ACTIVATED,
+        publishApplicationEvent(
+                BusinessOperationEventType.BUSINESS_ACTIVATED,
                 saved,
                 performedBy,
                 "ADMIN",
@@ -418,49 +405,56 @@ public class BusinessApplicationServiceImpl
         return mapToResponse(saved);
     }
 
-    private void publishEvent(
-            BusinessEventType eventType,
-            BusinessApplication application,
-            UUID performedBy,
-            String performedByRole,
-            String description,
-            String reason) {
+    private void publishApplicationCreatedEvent(
+            BusinessApplication application) {
 
-        BusinessEvent event =
-                BusinessEvent.builder()
+        ApplicationCreatedEvent event =
+                ApplicationCreatedEvent.builder()
                         .eventId(UUID.randomUUID())
-                        .eventType(eventType)
+                        .eventType(
+                                BusinessOperationEventType.APPLICATION_CREATED
+                        )
+                        .eventVersion(1)
+                        .source("business-operation-service")
+                        .occurredAt(LocalDateTime.now())
+                        .correlationId(null)
                         .businessId(
                                 application.getBusinessId()
                         )
                         .applicationId(
-                                application.getId()
+                                application.getApplicationId()
                         )
-                        .ownerUserId(
+                        .userId(
                                 application.getOwnerUserId()
                         )
-                        .performedBy(
-                                performedBy
-                        )
-                        .performedByRole(
-                                performedByRole
-                        )
                         .description(
-                                description
-                        )
-                        .reason(
-                                reason
-                        )
-                        .occurredAt(
-                                LocalDateTime.now()
+                                "Business application created"
                         )
                         .build();
 
-        businessEventProducer.publishBusinessEvent(event);
+        businessEventProducer.publishApplicationCreatedEvent(event);
+    }
+
+    private void publishApplicationEvent(
+            BusinessOperationEventType eventType,
+            BusinessApplication application,
+            String performedBy,
+            String performedByRole,
+            String description,
+            String reason) {
+
+        businessEventProducer.publishBusinessOperationEvent(
+                eventType,
+                application,
+                performedBy,
+                performedByRole,
+                description,
+                reason
+        );
     }
 
     private BusinessApplication getApplicationEntity(
-            UUID businessId) {
+            String businessId) {
 
         return businessApplicationRepository
                 .findByBusinessId(businessId)
@@ -477,8 +471,8 @@ public class BusinessApplicationServiceImpl
         BusinessApplicationResponse response =
                 new BusinessApplicationResponse();
 
-        response.setId(
-                application.getId()
+        response.setApplicationId(
+                application.getApplicationId()
         );
 
         response.setBusinessId(

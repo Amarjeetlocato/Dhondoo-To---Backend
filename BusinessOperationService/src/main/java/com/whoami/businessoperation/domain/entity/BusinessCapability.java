@@ -1,24 +1,54 @@
 package com.whoami.businessoperation.domain.entity;
 
-import com.whoami.businessoperation.domain.enums.CapabilityStatus;
-import com.whoami.businessoperation.domain.enums.CapabilityType;
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import com.whoami.businessoperation.domain.enums.CapabilityStatus;
+import com.whoami.businessoperation.domain.enums.CapabilityType;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(
         name = "business_capabilities",
         indexes = {
-                @Index(name = "idx_business_capability_business_id", columnList = "business_id"),
-                @Index(name = "idx_business_capability_type", columnList = "capability_type")
+                @Index(
+                        name = "idx_business_capability_capability_id",
+                        columnList = "capability_id"
+                ),
+                @Index(
+                        name = "idx_business_capability_business_id",
+                        columnList = "business_id"
+                ),
+                @Index(
+                        name = "idx_business_capability_type",
+                        columnList = "capability_type"
+                )
         },
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uk_business_capability",
-                        columnNames = {"business_id", "capability_type"}
+                        columnNames = {
+                                "business_id",
+                                "capability_type"
+                        }
                 )
         }
 )
@@ -30,26 +60,48 @@ import java.util.UUID;
 public class BusinessCapability {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(name = "business_id", nullable = false)
-    private UUID businessId;
+    @Column(
+            name = "capability_id",
+            unique = true,
+            nullable = false,
+            updatable = false,
+            length = 40
+    )
+    private String capabilityId;
+
+    @Column(
+            name = "business_id",
+            nullable = false,
+            length = 40
+    )
+    private String businessId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "capability_type", nullable = false, length = 40)
+    @Column(
+            name = "capability_type",
+            nullable = false,
+            length = 40
+    )
     private CapabilityType capabilityType;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "capability_status", nullable = false, length = 30)
+    @Column(
+            name = "capability_status",
+            nullable = false,
+            length = 30
+    )
     @Builder.Default
-    private CapabilityStatus capabilityStatus = CapabilityStatus.DISABLED;
+    private CapabilityStatus capabilityStatus =
+            CapabilityStatus.DISABLED;
 
-    @Column(name = "enabled_by")
-    private UUID enabledBy;
+    @Column(name = "enabled_by", length = 40)
+    private String enabledBy;
 
-    @Column(name = "disabled_by")
-    private UUID disabledBy;
+    @Column(name = "disabled_by", length = 40)
+    private String disabledBy;
 
     @Column(length = 1000)
     private String reason;
@@ -66,7 +118,18 @@ public class BusinessCapability {
 
     @PrePersist
     protected void onCreate() {
+
         LocalDateTime now = LocalDateTime.now();
+
+        if (capabilityId == null) {
+            capabilityId =
+                    "CAPABILITY_"
+                            + UUID.randomUUID()
+                                    .toString()
+                                    .replace("-", "")
+                                    .substring(0, 12)
+                                    .toUpperCase();
+        }
 
         if (createdAt == null) {
             createdAt = now;

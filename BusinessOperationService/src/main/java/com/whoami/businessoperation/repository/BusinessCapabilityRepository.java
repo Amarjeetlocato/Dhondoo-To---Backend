@@ -1,31 +1,31 @@
 package com.whoami.businessoperation.repository;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import com.whoami.businessoperation.domain.entity.BusinessCapability;
 import com.whoami.businessoperation.domain.enums.CapabilityStatus;
 import com.whoami.businessoperation.domain.enums.CapabilityType;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 public interface BusinessCapabilityRepository
-        extends JpaRepository<BusinessCapability, UUID> {
+        extends JpaRepository<BusinessCapability, Long> {
 
-    List<BusinessCapability> findByBusinessId(UUID businessId);
+    List<BusinessCapability> findByBusinessId(String businessId);
 
     Optional<BusinessCapability> findByBusinessIdAndCapabilityType(
-            UUID businessId,
+    		String businessId,
             CapabilityType capabilityType
     );
 
     List<BusinessCapability> findByBusinessIdAndCapabilityStatus(
-            UUID businessId,
+    		String businessId,
             CapabilityStatus capabilityStatus
     );
 
     boolean existsByBusinessIdAndCapabilityType(
-            UUID businessId,
+    		String businessId,
             CapabilityType capabilityType
     );
 }

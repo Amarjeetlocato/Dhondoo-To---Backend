@@ -7,7 +7,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.locato.dto.billing.event.RefundCompletedEvent;
+import com.locato.constants.events.EventSources;
+import com.locato.constants.events.EventVersions;
+import com.locato.constants.events.billing.BillingEventType;
+import com.locato.constants.events.billing.RefundCompletedEvent;
 import com.whoami.billing.domain.entity.PaymentStatus;
 import com.whoami.billing.domain.entity.Refund;
 import com.whoami.billing.dto.request.RefundRequest;
@@ -211,9 +214,11 @@ public class RefundServiceImpl implements RefundService {
         RefundCompletedEvent event =
                 RefundCompletedEvent.builder()
                         .eventId(UUID.randomUUID())
-                        .eventType("REFUND_COMPLETED")
-                        .timestamp(LocalDateTime.now())
-                        .source("BillingService")
+                        .eventType(BillingEventType.REFUND_COMPLETED)
+                        .eventVersion(EventVersions.V1)
+                        .source(EventSources.BILLING_SERVICE)
+                        .occurredAt(LocalDateTime.now())
+                        .correlationId(null)
                         .transactionId(
                                 payment.getTransactionId().toString()
                         )

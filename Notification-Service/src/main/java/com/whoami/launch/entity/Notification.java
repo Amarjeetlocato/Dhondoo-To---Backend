@@ -2,19 +2,13 @@ package com.whoami.launch.entity;
 
 import com.whoami.launch.enums.NotificationType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.UUID;
 
-/**
- * Notification Entity - Represents a notification in the system
- */
 @Entity
 @Table(name = "notifications", indexes = {
         @Index(name = "idx_user_id", columnList = "user_id"),
@@ -30,12 +24,14 @@ import java.util.List;
 @Builder
 public class Notification {
 
-    @Id
-    @Column(length = 36)
-    private String notificationId;
-    
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false, length = 36)
+	@Column(nullable = false, unique = true, updatable = false, length = 40)
+	private String notificationId;
+	
+    @Column(nullable = false, length = 30)
     private String userId;
 
     @Column(nullable = false, length = 255)
@@ -47,22 +43,22 @@ public class Notification {
     @Column(columnDefinition = "LONGTEXT")
     private String imageUrl;
 
-    @Column(length = 36)
+    @Column(length = 50)
     private String targetId;
 
     @Column(length = 50)
     private String targetType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 30)
     private NotificationType type;
-    
+
     @Column(columnDefinition = "LONGTEXT")
     private String metadataJson;
-    
+
     @Column(columnDefinition = "LONGTEXT")
     private String actionsJson;
-    
+
     private String deepLink;
 
     @Column(nullable = false)
@@ -80,4 +76,16 @@ public class Notification {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void prePersist() {
+        if (notificationId == null) {
+            notificationId = "NOTIFICATION_" +
+                    UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            .substring(0, 12)
+                            .toUpperCase();
+        }
+    }
 }

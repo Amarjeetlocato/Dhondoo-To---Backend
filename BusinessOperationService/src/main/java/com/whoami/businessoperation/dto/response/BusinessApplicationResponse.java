@@ -7,7 +7,6 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -16,11 +15,11 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BusinessApplicationResponse {
 
-    private UUID id;
+    private String applicationId;
 
-    private UUID businessId;
+    private String businessId;
 
-    private UUID ownerUserId;
+    private String ownerUserId;
 
     private BusinessType businessType;
 

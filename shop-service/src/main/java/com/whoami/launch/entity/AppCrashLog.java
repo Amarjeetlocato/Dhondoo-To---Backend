@@ -1,17 +1,11 @@
 package com.whoami.launch.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import com.whoami.launch.enums.ErrorType;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
@@ -22,6 +16,15 @@ public class AppCrashLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(
+            name = "crash_log_id",
+            unique = true,
+            nullable = false,
+            updatable = false,
+            length = 35
+    )
+    private String crashLogId;
 
     private String userId;
 
@@ -63,4 +66,21 @@ public class AppCrashLog {
     private String city;
 
     private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void prePersist() {
+
+        if (crashLogId == null) {
+            crashLogId = "CRASH_LOG_" +
+                    UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            .substring(0, 12)
+                            .toUpperCase();
+        }
+
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }

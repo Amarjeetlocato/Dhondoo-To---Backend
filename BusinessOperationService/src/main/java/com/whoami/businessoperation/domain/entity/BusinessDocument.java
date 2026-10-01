@@ -13,9 +13,22 @@ import java.util.UUID;
 @Table(
         name = "business_documents",
         indexes = {
-                @Index(name = "idx_business_document_business_id", columnList = "business_id"),
-                @Index(name = "idx_business_document_application_id", columnList = "application_id"),
-                @Index(name = "idx_business_document_status", columnList = "document_status")
+                @Index(
+                        name = "idx_business_document_document_id",
+                        columnList = "document_id"
+                ),
+                @Index(
+                        name = "idx_business_document_business_id",
+                        columnList = "business_id"
+                ),
+                @Index(
+                        name = "idx_business_document_application_id",
+                        columnList = "application_id"
+                ),
+                @Index(
+                        name = "idx_business_document_status",
+                        columnList = "document_status"
+                )
         }
 )
 @Getter
@@ -26,14 +39,31 @@ import java.util.UUID;
 public class BusinessDocument {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(name = "business_id", nullable = false)
-    private UUID businessId;
+    @Column(
+            name = "document_id",
+            unique = true,
+            nullable = false,
+            updatable = false,
+            length = 40
+    )
+    private String documentId;
 
-    @Column(name = "application_id", nullable = false)
-    private UUID applicationId;
+    @Column(
+            name = "business_id",
+            nullable = false,
+            length = 40
+    )
+    private String businessId;
+
+    @Column(
+            name = "application_id",
+            nullable = false,
+            length = 40
+    )
+    private String applicationId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "document_type", nullable = false, length = 50)
@@ -70,7 +100,17 @@ public class BusinessDocument {
 
     @PrePersist
     protected void onCreate() {
+
         LocalDateTime now = LocalDateTime.now();
+
+        if (documentId == null) {
+            documentId = "DOCUMENT_" +
+                    UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            .substring(0, 12)
+                            .toUpperCase();
+        }
 
         if (createdAt == null) {
             createdAt = now;

@@ -1,12 +1,8 @@
 package com.whoami.launch.entity;
 
+import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,49 +13,58 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Service {
-    
+
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(
+            unique = true,
+            nullable = false,
+            updatable = false,
+            length = 30
+    )
     private String serviceId;
-    
-    @Column(nullable = false)
-    private String shopId;
-    
+
+    @Column(nullable = false, length = 30)
+    private String businessId;
+
     
     @Column(nullable = false)
     private String serviceName;
-    
-    @Column
+
     private String thumbnailUrl;
 
-    @Column
     private String thumbnailPublicId;
 
-    @Column
     private String promoVideoUrl;
 
-    @Column
     private String videoPublicId;
-    
+
     @Column(columnDefinition = "TEXT")
     private String serviceDescription;
-    
-    @Column
+
     private Double price;
-    
-    @Column
+
     private String duration;
-    
-    @Column
+
     private String orderType;
-    
-    @Column
+
     private String suggestion;
-    
-    @Column
+
     private String visibility;
-    
-    @Column
+
     private String badges;
-   
+
+    @PrePersist
+    protected void prePersist() {
+        if (serviceId == null) {
+            serviceId = "SERVICE_" +
+                    UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            .substring(0, 12)
+                            .toUpperCase();
+        }
+    }
 }

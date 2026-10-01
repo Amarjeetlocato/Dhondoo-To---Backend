@@ -6,7 +6,6 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -15,11 +14,11 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BusinessDocumentResponse {
 
-    private UUID id;
+    private String documentId;
 
-    private UUID businessId;
+    private String businessId;
 
-    private UUID applicationId;
+    private String applicationId;
 
     private DocumentType documentType;
 

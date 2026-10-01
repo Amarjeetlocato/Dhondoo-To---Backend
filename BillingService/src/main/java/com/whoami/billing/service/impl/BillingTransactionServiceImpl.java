@@ -1,9 +1,18 @@
 package com.whoami.billing.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.locato.dto.billing.event.BillingCreatedEvent;
-import com.locato.topics.BillingTopics;
+import com.locato.constants.events.EventSources;
+import com.locato.constants.events.EventVersions;
+import com.locato.constants.events.billing.BillingCreatedEvent;
+import com.locato.constants.events.billing.BillingEventType;
+import com.locato.constants.topics.KafkaTopics;
 import com.whoami.billing.domain.entity.BillingTransaction;
 import com.whoami.billing.domain.entity.BillingTransactionStatus;
 import com.whoami.billing.domain.entity.OutboxEvent;
@@ -12,12 +21,8 @@ import com.whoami.billing.dto.response.BillingTransactionResponse;
 import com.whoami.billing.repository.BillingTransactionRepository;
 import com.whoami.billing.service.BillingTransactionService;
 import com.whoami.billing.service.OutboxService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -71,9 +76,11 @@ public class BillingTransactionServiceImpl
         BillingCreatedEvent event =
                 BillingCreatedEvent.builder()
                         .eventId(UUID.randomUUID())
-                        .eventType("BILLING_CREATED")
-                        .timestamp(LocalDateTime.now())
-                        .source("BillingService")
+                        .eventType(BillingEventType.BILLING_CREATED)
+                        .eventVersion(EventVersions.V1)
+                        .source(EventSources.BILLING_SERVICE)
+                        .occurredAt(LocalDateTime.now())
+                        .correlationId(null)
                         .transactionId(saved.getTransactionId())
                         .customerId(saved.getCustomerId())
                         .referenceType(saved.getReferenceType())
@@ -102,7 +109,7 @@ public class BillingTransactionServiceImpl
                             .aggregateType("BillingTransaction")
                             .aggregateId(saved.getTransactionId())
                             .eventType("BILLING_CREATED")
-                            .topic(BillingTopics.BILLING_CREATED)
+                            .topic(KafkaTopics.BILLING_EVENTS)
                             .payload(payload)
                             .build();
 

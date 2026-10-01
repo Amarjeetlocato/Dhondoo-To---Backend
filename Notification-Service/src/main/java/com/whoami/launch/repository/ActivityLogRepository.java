@@ -6,19 +6,23 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * Repository for ActivityLog entity
  */
 @Repository
-public interface ActivityLogRepository extends JpaRepository<ActivityLog, String> {
+public interface ActivityLogRepository
+        extends JpaRepository<ActivityLog, Long> {
 
-    /**
-     * Get activity logs for a user, ordered by latest first
-     */
-    Page<ActivityLog> findByUserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
+    Page<ActivityLog> findByUserIdOrderByCreatedAtDesc(
+            String userId,
+            Pageable pageable
+    );
 
-    /**
-     * Count activity logs for a user
-     */
     Long countByUserId(String userId);
+
+    Optional<ActivityLog> findByActivityId(
+            String activityId
+    );
 }

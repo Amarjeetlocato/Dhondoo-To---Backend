@@ -5,11 +5,11 @@ package com.whoami.launch.consumer;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.locato.dto.ProductCreatedEvent;
-import com.locato.dto.ProductDeletedEvent;
-import com.locato.dto.ProductUpdatedEvent;
+import com.locato.constants.events.product.ProductCreatedEvent;
+import com.locato.constants.events.product.ProductDeletedEvent;
+import com.locato.constants.events.product.ProductUpdatedEvent;
+import com.locato.constants.topics.KafkaTopics;
 import com.whoami.launch.order.orders.service.OrderSyncService;
-import com.locato.topics.KafkaTopics;
 
 import lombok.RequiredArgsConstructor;
 

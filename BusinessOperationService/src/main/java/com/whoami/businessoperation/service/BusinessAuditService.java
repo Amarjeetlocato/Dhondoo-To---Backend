@@ -9,10 +9,10 @@ import java.util.UUID;
 public interface BusinessAuditService {
 
     void log(
-            UUID businessId,
-            UUID applicationId,
+    		String businessId,
+    		String applicationId,
             AuditAction action,
-            UUID performedBy,
+            String performedBy,
             String performedByRole,
             String description,
             String ipAddress,
@@ -20,10 +20,10 @@ public interface BusinessAuditService {
     );
 
     List<BusinessAuditLog> getBusinessAuditLogs(
-            UUID businessId
+    		String businessId
     );
 
     List<BusinessAuditLog> getApplicationAuditLogs(
-            UUID applicationId
+    		String applicationId
     );
 }

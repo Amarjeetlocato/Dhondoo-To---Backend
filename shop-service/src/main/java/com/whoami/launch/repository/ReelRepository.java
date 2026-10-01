@@ -1,6 +1,7 @@
 package com.whoami.launch.repository;
 
 import com.whoami.launch.entity.Reel;
+import com.whoami.launch.entity.Report;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,16 +10,34 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface ReelRepository extends JpaRepository<Reel, String> {
-    List<Reel> findByShopId(String shopId);
+public interface ReelRepository
+        extends JpaRepository<Reel, Long> {
+
+    List<Reel> findByBusinessId(String businessId);
+
     List<Reel> findByReelDescriptionContaining(String description);
-    
-    @Query("SELECT r FROM Reel r WHERE r.shopId IN " +
-           "(SELECT s.shopId FROM Shop s WHERE s.latitude IS NOT NULL AND s.longitude IS NOT NULL)")
-    List<Reel> findAllFromShopsWithCoordinates();
-    long countByShopId(String string);
-    
-    Page<Reel> findByShopId(String shopId, Pageable pageable);
+
+    @Query("""
+            SELECT r
+            FROM Reel r
+            WHERE r.businessId IN
+            (
+                SELECT b.businessId
+                FROM Business b
+                WHERE b.latitude IS NOT NULL
+                AND b.longitude IS NOT NULL
+            )
+            """)
+    List<Reel> findAllFromBusinessesWithCoordinates();
+
+    long countByBusinessId(String businessId);
+
+    Page<Reel> findByBusinessId(
+            String businessId,
+            Pageable pageable);
+
+	Optional<Reel> findByReelId(String targetId);
 }

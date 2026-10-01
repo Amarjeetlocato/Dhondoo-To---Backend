@@ -3,10 +3,10 @@ package com.whoami.launch.consumer;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.whoami.launch.dto.KafkaTopics;
-import com.locato.dto.ReelCreatedEvent;
-import com.locato.dto.ReelDeletedEvent;
-import com.locato.dto.ReelUpdatedEvent;
+import com.locato.constants.events.reel.ReelCreatedEvent;
+import com.locato.constants.events.reel.ReelDeletedEvent;
+import com.locato.constants.events.reel.ReelUpdatedEvent;
+import com.locato.constants.topics.KafkaTopics;
 import com.whoami.launch.service.NotificationService;
 
 import lombok.RequiredArgsConstructor;

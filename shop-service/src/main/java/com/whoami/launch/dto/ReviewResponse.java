@@ -1,26 +1,27 @@
 package com.whoami.launch.dto;
 
+import com.whoami.launch.enums.ReviewStatus;
+import com.whoami.launch.enums.ReviewTargetType;
+import com.whoami.launch.enums.VerificationType;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
-import com.whoami.launch.enums.ReviewTargetType;
-import com.whoami.launch.enums.ReviewStatus;
-import com.whoami.launch.enums.VerificationType;
-
-import lombok.Data;
-
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ReviewResponse {
 
-    private Long id;
+    private String reviewId;
 
     private String userId;
 
     private ReviewTargetType targetType;
-
     private String targetId;
 
     private Integer rating;
-
     private String reviewText;
 
     private VerificationType verificationType;
@@ -28,8 +29,5 @@ public class ReviewResponse {
     private ReviewStatus status;
 
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
-
-    // Getters & Setters
 }

@@ -55,7 +55,7 @@ public class ConversationController {
                     List<ChatMessageDTO> messages =
                             c.getMessages().stream()
                                     .map(m -> new ChatMessageDTO(
-                                    		 m.getId(),
+                                    		 m.getMessageId(),
                                              m.getSenderId(),
                                              m.getReceiverId(),
                                              m.getContent(),

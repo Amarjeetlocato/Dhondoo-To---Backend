@@ -1,14 +1,16 @@
 package com.whoami.billing.kafka;
 
-import com.locato.dto.billing.event.BillingRequestedEvent;
-import com.locato.topics.BillingTopics;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
+
+import com.locato.constants.events.billing.BillingRequestedEvent;
+import com.locato.constants.topics.KafkaTopics;
 import com.whoami.billing.dto.request.CreateBillingRequest;
 import com.whoami.billing.dto.response.BillingTransactionResponse;
 import com.whoami.billing.service.BillingTransactionService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
@@ -18,7 +20,7 @@ public class BillingEventConsumer {
     private final BillingTransactionService billingTransactionService;
 
     @KafkaListener(
-            topics = BillingTopics.BILLING_REQUESTED,
+            topics = KafkaTopics.BILLING_EVENTS,
             groupId = "${spring.kafka.consumer.group-id}"
     )
     public void consumeBillingRequested(BillingRequestedEvent event) {

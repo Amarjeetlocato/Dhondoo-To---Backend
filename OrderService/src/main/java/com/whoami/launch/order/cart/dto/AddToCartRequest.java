@@ -13,11 +13,11 @@ import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor      
+@AllArgsConstructor
 public class AddToCartRequest {
 
-    @NotBlank(message = "Shop ID is required")
-    private String shopId;
+    @NotBlank(message = "Business ID is required")
+    private String businessId;
 
     @NotBlank(message = "Product ID is required")
     private String productId;
@@ -28,14 +28,20 @@ public class AddToCartRequest {
     private String imageUrl;
 
     @NotNull(message = "Price is required")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
+    @DecimalMin(
+            value = "0.0",
+            inclusive = false,
+            message = "Price must be greater than 0"
+    )
     private BigDecimal price;
 
     @NotNull(message = "Quantity is required")
-    @Min(value = 1, message = "Quantity must be at least 1")
+    @Min(
+            value = 1,
+            message = "Quantity must be at least 1"
+    )
     private Integer quantity;
 
-    // Support snapshot field names from frontend
     @JsonProperty("productNameSnapshot")
     private void setProductNameSnapshot(String productNameSnapshot) {
         if (this.productName == null) {
@@ -56,7 +62,4 @@ public class AddToCartRequest {
             this.price = priceSnapshot;
         }
     }
-
-   
-
 }

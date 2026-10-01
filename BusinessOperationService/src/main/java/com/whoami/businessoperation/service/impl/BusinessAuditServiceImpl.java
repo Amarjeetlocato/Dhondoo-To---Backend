@@ -22,10 +22,10 @@ public class BusinessAuditServiceImpl implements BusinessAuditService {
 
     @Override
     public void log(
-            UUID businessId,
-            UUID applicationId,
+            String businessId,
+            String applicationId,
             AuditAction action,
-            UUID performedBy,
+            String performedBy,
             String performedByRole,
             String description,
             String ipAddress,
@@ -48,7 +48,7 @@ public class BusinessAuditServiceImpl implements BusinessAuditService {
     @Override
     @Transactional(readOnly = true)
     public List<BusinessAuditLog> getBusinessAuditLogs(
-            UUID businessId) {
+    		String businessId) {
 
         return businessAuditLogRepository
                 .findByBusinessIdOrderByCreatedAtDesc(businessId);
@@ -57,7 +57,7 @@ public class BusinessAuditServiceImpl implements BusinessAuditService {
     @Override
     @Transactional(readOnly = true)
     public List<BusinessAuditLog> getApplicationAuditLogs(
-            UUID applicationId) {
+    		String applicationId) {
 
         return businessAuditLogRepository
                 .findByApplicationIdOrderByCreatedAtDesc(applicationId);

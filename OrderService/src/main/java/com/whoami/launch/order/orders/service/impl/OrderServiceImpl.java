@@ -4,13 +4,12 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.locato.constants.topics.KafkaTopics;
 import com.whoami.launch.dto.NotificationEvent;
 import com.whoami.launch.enums.NotificationType;
 import com.whoami.launch.order.cart.entity.Cart;
@@ -27,26 +26,17 @@ import com.whoami.launch.order.orders.repository.OrderItemRepository;
 import com.whoami.launch.order.orders.repository.OrderRepository;
 import com.whoami.launch.order.orders.service.OrderService;
 import com.whoami.launch.producer.OrderKafkaProducer;
-import com.locato.topics.KafkaTopics;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
-
-    @Autowired
-    private OrderKafkaProducer orderKafkaProducer;
-    public OrderServiceImpl(
-            CartRepository cartRepository,
-            OrderRepository orderRepository,
-            OrderItemRepository orderItemRepository) {
-
-        this.cartRepository = cartRepository;
-        this.orderRepository = orderRepository;
-        this.orderItemRepository = orderItemRepository;
-    }
+    private final OrderKafkaProducer orderKafkaProducer;
 
     @Override
     @Transactional
@@ -54,107 +44,185 @@ public class OrderServiceImpl implements OrderService {
             String customerId,
             PlaceOrderRequest request) {
 
-        List<Cart> cartItems = cartRepository.findByUserId(customerId);
+        List<Cart> cartItems =
+                cartRepository.findByCustomerId(customerId);
 
         if (cartItems.isEmpty()) {
             throw new BadRequestException("Cart is empty");
         }
 
-        Map<String, List<Cart>> grouped = cartItems.stream()
-                .collect(Collectors.groupingBy(Cart::getShopId));
+        Map<String, List<Cart>> grouped =
+                cartItems.stream()
+                        .collect(Collectors.groupingBy(
+                                Cart::getBusinessId
+                        ));
 
-        List<OrderResponse> responses = new ArrayList<>();
+        List<OrderResponse> responses =
+                new ArrayList<>();
 
-        for (Map.Entry<String, List<Cart>> entry : grouped.entrySet()) {
+        for (Map.Entry<String, List<Cart>> entry :
+                grouped.entrySet()) {
 
-            String shopId = entry.getKey();
+            String businessId = entry.getKey();
             List<Cart> items = entry.getValue();
 
-            String orderId = UUID.randomUUID().toString();
+            String orderId =
+                    "ORDER_" + java.util.UUID.randomUUID();
 
             Order order = new Order();
+
             order.setOrderId(orderId);
             order.setCustomerId(customerId);
-            order.setShopId(shopId);
+            order.setBusinessId(businessId);
             order.setStatus(OrderStatus.REQUESTED);
-            order.setCustomerNote(request.getCustomerNote());
-            order.setDeliveryAddress(request.getDeliveryAddress());
+            order.setCustomerNote(
+                    request.getCustomerNote()
+            );
+            order.setDeliveryAddress(
+                    request.getDeliveryAddress()
+            );
 
-            List<OrderItem> orderItems = new ArrayList<>();
-            BigDecimal subtotal = BigDecimal.ZERO;
+            List<OrderItem> orderItems =
+                    new ArrayList<>();
+
+            BigDecimal subtotal =
+                    BigDecimal.ZERO;
 
             for (Cart cart : items) {
 
-                OrderItem orderItem = new OrderItem();
+                OrderItem orderItem =
+                        new OrderItem();
+
                 orderItem.setOrderId(orderId);
-                orderItem.setProductId(cart.getProductId());
-                orderItem.setProductNameSnapshot(cart.getProductNameSnapshot());
-                orderItem.setImageSnapshot(cart.getImageSnapshot());
-                orderItem.setPriceSnapshot(cart.getPriceSnapshot());
-                orderItem.setQuantity(cart.getQuantity());
+                orderItem.setProductId(
+                        cart.getProductId()
+                );
+                orderItem.setProductNameSnapshot(
+                        cart.getProductNameSnapshot()
+                );
+                orderItem.setImageSnapshot(
+                        cart.getImageSnapshot()
+                );
+                orderItem.setPriceSnapshot(
+                        cart.getPriceSnapshot()
+                );
+                orderItem.setQuantity(
+                        cart.getQuantity()
+                );
 
                 orderItem.setTotalPrice(
                         cart.getPriceSnapshot()
-                                .multiply(BigDecimal.valueOf(cart.getQuantity()))
+                                .multiply(
+                                        BigDecimal.valueOf(
+                                                cart.getQuantity()
+                                        )
+                                )
                 );
 
-                subtotal = subtotal.add(orderItem.getTotalPrice());
+                subtotal =
+                        subtotal.add(
+                                orderItem.getTotalPrice()
+                        );
+
                 orderItems.add(orderItem);
             }
 
             order.setSubtotal(subtotal);
 
-            Order savedOrder = orderRepository.save(order);
+            Order savedOrder =
+                    orderRepository.save(order);
 
             orderItemRepository.saveAll(orderItems);
 
-            // Order Placed Notification
             sendOrderStatusNotification(savedOrder);
-            sendShopOrderNotification(savedOrder);
 
-            responses.add(toResponse(savedOrder, orderItems));
+            /*
+             * Business-owner notification is intentionally
+             * not migrated here yet.
+             *
+             * businessId != userId.
+             *
+             * We need the business owner's userId from
+             * the Order/business snapshot architecture
+             * before sending this notification correctly.
+             */
+
+            responses.add(
+                    toResponse(
+                            savedOrder,
+                            orderItems
+                    )
+            );
         }
 
-        cartRepository.deleteByUserId(customerId);
+        cartRepository.deleteByCustomerId(customerId);
 
         return responses;
     }
 
     @Override
-    public List<OrderResponse> getCustomerOrders(String customerId) {
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getCustomerOrders(
+            String customerId) {
 
-        return orderRepository.findByCustomerId(customerId)
+        return orderRepository
+                .findByCustomerId(customerId)
                 .stream()
-                .map(order -> toResponse(
-                        order,
-                        orderItemRepository.findByOrderId(order.getOrderId())))
-                .collect(Collectors.toList());
+                .map(order ->
+                        toResponse(
+                                order,
+                                orderItemRepository
+                                        .findByOrderId(
+                                                order.getOrderId()
+                                        )
+                        )
+                )
+                .toList();
     }
 
     @Override
-    public List<OrderResponse> getShopOrders(String shopId) {
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getBusinessOrders(
+            String businessId) {
 
-        return orderRepository.findByShopId(shopId)
+        return orderRepository
+                .findByBusinessId(businessId)
                 .stream()
-                .map(order -> toResponse(
-                        order,
-                        orderItemRepository.findByOrderId(order.getOrderId())))
-                .collect(Collectors.toList());
+                .map(order ->
+                        toResponse(
+                                order,
+                                orderItemRepository
+                                        .findByOrderId(
+                                                order.getOrderId()
+                                        )
+                        )
+                )
+                .toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderResponse getOrderDetails(
             String orderId,
             String currentCustomerId,
-            String currentShopId) {
+            String currentBusinessId) {
 
-        Order order = orderRepository.findByOrderId(orderId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Order not found"));
+        Order order =
+                orderRepository
+                        .findByOrderId(orderId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Order not found"
+                                )
+                        );
 
         return toResponse(
                 order,
-                orderItemRepository.findByOrderId(order.getOrderId()));
+                orderItemRepository
+                        .findByOrderId(
+                                order.getOrderId()
+                        )
+        );
     }
 
     @Override
@@ -162,25 +230,35 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse updateOrderStatus(
             String orderId,
             OrderStatus newStatus,
-            String shopId) {
+            String businessId) {
 
-        Order order = orderRepository.findByOrderId(orderId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Order not found"));
+        Order order =
+                orderRepository
+                        .findByOrderId(orderId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Order not found"
+                                )
+                        );
 
         order.setStatus(newStatus);
 
-        Order updated = orderRepository.save(order);
+        Order updated =
+                orderRepository.save(order);
 
-        // Status Change Notification
         sendOrderStatusNotification(updated);
 
         return toResponse(
                 updated,
-                orderItemRepository.findByOrderId(updated.getOrderId()));
+                orderItemRepository
+                        .findByOrderId(
+                                updated.getOrderId()
+                        )
+        );
     }
 
-    private void sendOrderStatusNotification(Order order) {
+    private void sendOrderStatusNotification(
+            Order order) {
 
         String title;
         String message;
@@ -189,37 +267,44 @@ public class OrderServiceImpl implements OrderService {
 
             case REQUESTED:
                 title = "Order Placed";
-                message = "Your order has been placed successfully.";
+                message =
+                        "Your order has been placed successfully.";
                 break;
 
             case ACCEPTED:
                 title = "Order Accepted";
-                message = "Your order has been accepted by the shop.";
+                message =
+                        "Your order has been accepted by the business.";
                 break;
 
             case REJECTED:
                 title = "Order Rejected";
-                message = "Your order has been rejected by the shop.";
+                message =
+                        "Your order has been rejected by the business.";
                 break;
 
             case PREPARING:
                 title = "Order Preparing";
-                message = "Your order is currently being prepared.";
+                message =
+                        "Your order is currently being prepared.";
                 break;
 
             case READY:
                 title = "Order Ready";
-                message = "Your order is ready.";
+                message =
+                        "Your order is ready.";
                 break;
 
             case DELIVERED:
                 title = "Order Delivered";
-                message = "Your order has been delivered successfully.";
+                message =
+                        "Your order has been delivered successfully.";
                 break;
 
             case CANCELLED:
                 title = "Order Cancelled";
-                message = "Your order has been cancelled.";
+                message =
+                        "Your order has been cancelled.";
                 break;
 
             default:
@@ -242,60 +327,90 @@ public class OrderServiceImpl implements OrderService {
                 event
         );
     }
+
     private OrderResponse toResponse(
             Order order,
             List<OrderItem> items) {
 
-        OrderResponse response = new OrderResponse();
+        OrderResponse response =
+                new OrderResponse();
 
-        response.setOrderId(order.getOrderId());
-        response.setCustomerId(order.getCustomerId());
-        response.setShopId(order.getShopId());
-        response.setStatus(order.getStatus());
-        response.setSubtotal(order.getSubtotal());
-        response.setCustomerNote(order.getCustomerNote());
-        response.setDeliveryAddress(order.getDeliveryAddress());
-        response.setCreatedAt(order.getCreatedAt());
-        response.setUpdatedAt(order.getUpdatedAt());
+        response.setOrderId(
+                order.getOrderId()
+        );
 
-        List<OrderItemResponse> itemResponses = items.stream()
-                .map(this::toItemResponse)
-                .collect(Collectors.toList());
+        response.setCustomerId(
+                order.getCustomerId()
+        );
+
+        response.setBusinessId(
+                order.getBusinessId()
+        );
+
+        response.setStatus(
+                order.getStatus()
+        );
+
+        response.setSubtotal(
+                order.getSubtotal()
+        );
+
+        response.setCustomerNote(
+                order.getCustomerNote()
+        );
+
+        response.setDeliveryAddress(
+                order.getDeliveryAddress()
+        );
+
+        response.setCreatedAt(
+                order.getCreatedAt()
+        );
+
+        response.setUpdatedAt(
+                order.getUpdatedAt()
+        );
+
+        List<OrderItemResponse> itemResponses =
+                items.stream()
+                        .map(this::toItemResponse)
+                        .toList();
 
         response.setItems(itemResponses);
 
         return response;
     }
 
-    private OrderItemResponse toItemResponse(OrderItem item) {
+    private OrderItemResponse toItemResponse(
+            OrderItem item) {
 
-        OrderItemResponse response = new OrderItemResponse();
+        OrderItemResponse response =
+                new OrderItemResponse();
 
-        response.setProductId(item.getProductId());
-        response.setProductNameSnapshot(item.getProductNameSnapshot());
-        response.setImageSnapshot(item.getImageSnapshot());
-        response.setPriceSnapshot(item.getPriceSnapshot());
-        response.setQuantity(item.getQuantity());
-        response.setTotalPrice(item.getTotalPrice());
+        response.setProductId(
+                item.getProductId()
+        );
+
+        response.setProductNameSnapshot(
+                item.getProductNameSnapshot()
+        );
+
+        response.setImageSnapshot(
+                item.getImageSnapshot()
+        );
+
+        response.setPriceSnapshot(
+                item.getPriceSnapshot()
+        );
+
+        response.setQuantity(
+                item.getQuantity()
+        );
+
+        response.setTotalPrice(
+                item.getTotalPrice()
+        );
 
         return response;
-    }
-    private void sendShopOrderNotification(Order order) {
-
-        NotificationEvent event =
-                NotificationEvent.builder()
-                        .userId(order.getShopId())
-                        .title("New Order Received")
-                        .message("New order received. Order ID: " + order.getOrderId())
-                        .targetId(order.getOrderId())
-                        .targetType("ORDER")
-                        .type(NotificationType.ORDER)
-                        .sendPush(true)
-                        .build();
-
-        orderKafkaProducer.publish(
-                KafkaTopics.NOTIFICATION_EVENTS,
-                event
-        );
     }
 }

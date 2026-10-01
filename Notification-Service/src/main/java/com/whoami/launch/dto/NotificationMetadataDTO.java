@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class NotificationMetadataDTO {
 
-    private String shopId;
+    private String businessId;
 
     private String productId;
 

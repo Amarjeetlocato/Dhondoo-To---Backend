@@ -1,9 +1,5 @@
 package com.whoami.launch.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import com.whoami.launch.dto.ApiResponse;
 import com.whoami.launch.dto.PageResponse;
 import com.whoami.launch.dto.ReelCommentRequest;
@@ -11,14 +7,21 @@ import com.whoami.launch.dto.ReelCommentResponse;
 import com.whoami.launch.service.ReelCommentService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/api")
+@RequiredArgsConstructor
 public class ReelCommentController {
 
-    @Autowired
-    private ReelCommentService reelCommentService;
+    private final ReelCommentService reelCommentService;
 
-    @PostMapping("/api/users/{userId}/reels/comments")
+    // ================= ADD COMMENT =================
+
+    @PostMapping("/users/{userId}/reels/comments")
     public ResponseEntity<ApiResponse<ReelCommentResponse>> addComment(
             @PathVariable String userId,
             @Valid @RequestBody ReelCommentRequest request) {
@@ -26,49 +29,65 @@ public class ReelCommentController {
         ReelCommentResponse response =
                 reelCommentService.addComment(
                         userId,
-                        request);
+                        request
+                );
 
         return ResponseEntity.ok(
                 ApiResponse.success(
                         "Comment added successfully",
-                        response));
+                        response
+                )
+        );
     }
 
-    @PutMapping("/api/users/{userId}/reels/comments/{commentId}")
+    // ================= UPDATE COMMENT =================
+
+    @PutMapping("/users/{userId}/reels/comments/{commentId}")
     public ResponseEntity<ApiResponse<ReelCommentResponse>> updateComment(
             @PathVariable String userId,
-            @PathVariable Long commentId,
+            @PathVariable String commentId,
             @Valid @RequestBody ReelCommentRequest request) {
 
         ReelCommentResponse response =
                 reelCommentService.updateComment(
                         userId,
                         commentId,
-                        request);
+                        request
+                );
 
         return ResponseEntity.ok(
                 ApiResponse.success(
                         "Comment updated successfully",
-                        response));
+                        response
+                )
+        );
     }
 
-    @DeleteMapping("/api/users/{userId}/reels/comments/{commentId}")
+    // ================= DELETE COMMENT =================
+
+    @DeleteMapping("/users/{userId}/reels/comments/{commentId}")
     public ResponseEntity<ApiResponse<String>> deleteComment(
             @PathVariable String userId,
-            @PathVariable Long commentId) {
+            @PathVariable String commentId) {
 
         reelCommentService.deleteComment(
                 userId,
-                commentId);
+                commentId
+        );
 
         return ResponseEntity.ok(
                 ApiResponse.success(
                         "Comment deleted successfully",
-                        "SUCCESS"));
+                        "SUCCESS"
+                )
+        );
     }
 
-    @GetMapping("/api/reels/{reelId}/comments")
-    public ResponseEntity<ApiResponse<PageResponse<ReelCommentResponse>>> getComments(
+    // ================= GET COMMENTS =================
+
+    @GetMapping("/reels/{reelId}/comments")
+    public ResponseEntity<ApiResponse<PageResponse<ReelCommentResponse>>>
+    getComments(
             @PathVariable String reelId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -77,11 +96,14 @@ public class ReelCommentController {
                 reelCommentService.getComments(
                         reelId,
                         page,
-                        size);
+                        size
+                );
 
         return ResponseEntity.ok(
                 ApiResponse.success(
                         "Comments fetched successfully",
-                        response));
+                        response
+                )
+        );
     }
 }

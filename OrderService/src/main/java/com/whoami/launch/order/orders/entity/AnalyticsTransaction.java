@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "analytics_transactions")
@@ -19,17 +20,34 @@ public class AnalyticsTransaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String shopId;
+    @Column(
+            unique = true,
+            nullable = false,
+            updatable = false,
+            length = 65
+    )
+    private String transactionId;
 
+    @Column(nullable = false, length = 40)
+    private String businessId;
+
+    @Column(nullable = false, length = 40)
     private String orderId;
 
+    @Column(nullable = false, length = 40)
     private String customerId;
 
-    private Long itemId;
+    /**
+     * Can be PRODUCT_... or SERVICE_...
+     */
+    @Column(nullable = false, length = 55)
+    private String itemId;
 
+    @Column(length = 500)
     private String itemName;
 
-    private String itemType; // PRODUCT,SERVICE
+    @Column(length = 30)
+    private String itemType;
 
     private Integer quantity;
 
@@ -38,4 +56,17 @@ public class AnalyticsTransaction {
     private BigDecimal totalAmount;
 
     private LocalDateTime soldAt;
+
+    @PrePersist
+    public void prePersist() {
+
+        if (transactionId == null) {
+            transactionId = "ANALYTICS_TRANSACTION_" +
+                    UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            .substring(0, 12)
+                            .toUpperCase();
+        }
+    }
 }

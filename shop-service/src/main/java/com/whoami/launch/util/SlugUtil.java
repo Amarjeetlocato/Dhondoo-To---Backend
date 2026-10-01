@@ -1,11 +1,15 @@
 package com.whoami.launch.util;
+
 import java.util.UUID;
 
-public class SlugUtil {
+public final class SlugUtil {
 
-    public static String generate(String shopName) {
+    private SlugUtil() {
+    }
 
-        String base = shopName
+    public static String generate(String businessName) {
+
+        String base = businessName
                 .toLowerCase()
                 .trim()
                 .replaceAll("[^a-z0-9\\s]", "")
@@ -15,6 +19,7 @@ public class SlugUtil {
                 .toString()
                 .replace("-", "")
                 .substring(0, 6);
+
         return base + "-" + suffix;
     }
 }

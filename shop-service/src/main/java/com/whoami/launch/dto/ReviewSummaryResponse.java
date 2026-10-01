@@ -1,10 +1,15 @@
 package com.whoami.launch.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ReviewSummaryResponse {
 
     private Double averageRating;
-
     private Long totalReviews;
-
-    // Getters & Setters
 }
+

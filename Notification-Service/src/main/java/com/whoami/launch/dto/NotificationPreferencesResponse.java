@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 public class NotificationPreferencesResponse {
 
     @Schema(description = "Preference ID", example = "1")
-    private Long preferenceId;
+    private String preferenceId;
 
     @Schema(description = "User ID", example = "user-123")
     private String userId;
@@ -39,9 +39,9 @@ public class NotificationPreferencesResponse {
     @Schema(description = "Product notification enabled", example = "true")
     private Boolean productNotification;
 
-    @Schema(description = "Shop notification enabled", example = "true")
-    private Boolean shopNotification;
-
+    @Schema(description = "Enable business notifications", example = "true") 
+    private Boolean businessNotification;
+    
     @Schema(description = "Service notification enabled", example = "true")
     private Boolean serviceNotification;
 

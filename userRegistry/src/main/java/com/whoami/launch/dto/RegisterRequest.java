@@ -4,20 +4,17 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class RegisterRequest {
 
     @NotBlank(message = "Full name is required")
-    @Size(min = 3, max = 50)
-    private String usernme;
+    @Size(min = 3, max = 100)
+    private String fullName;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
@@ -26,6 +23,4 @@ public class RegisterRequest {
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 100)
     private String password;
-
-    
 }

@@ -1,18 +1,13 @@
 package com.whoami.launch.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-/**
- * DeviceToken Entity - Stores Firebase Cloud Messaging device tokens
- */
 @Entity
 @Table(name = "device_tokens", indexes = {
         @Index(name = "idx_device_user_id", columnList = "user_id"),
@@ -25,11 +20,14 @@ import java.time.LocalDateTime;
 @Builder
 public class DeviceToken {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long deviceTokenId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false, length = 36)
+	@Column(nullable = false, unique = true, updatable = false, length = 40)
+	private String deviceTokenId;
+
+    @Column(nullable = false, length = 30)
     private String userId;
 
     @Column(nullable = false, columnDefinition = "TEXT", unique = true)
@@ -49,4 +47,16 @@ public class DeviceToken {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void prePersist() {
+        if (deviceTokenId == null) {
+            deviceTokenId = "DEVICE_TOKEN_" +
+                    UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            .substring(0, 12)
+                            .toUpperCase();
+        }
+    }
 }

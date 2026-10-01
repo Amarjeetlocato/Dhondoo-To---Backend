@@ -9,17 +9,14 @@ import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor 
+@NoArgsConstructor
 public class VerifyOtpRequest {
 
-	
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    private String email;
 
-	    @Email
-	    @NotBlank
-	    private String email;
-
-	    @NotBlank
-	    @Size(min = 6, max = 6)
-	    private String otp;
-	
+    @NotBlank(message = "OTP is required")
+    @Size(min = 6, max = 6)
+    private String otp;
 }

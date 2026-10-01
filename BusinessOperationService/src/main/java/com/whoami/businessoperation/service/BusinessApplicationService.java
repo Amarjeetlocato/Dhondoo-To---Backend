@@ -6,7 +6,6 @@ import com.whoami.businessoperation.dto.request.UpdateBusinessApplicationRequest
 import com.whoami.businessoperation.dto.response.BusinessApplicationResponse;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface BusinessApplicationService {
 
@@ -15,15 +14,15 @@ public interface BusinessApplicationService {
     );
 
     BusinessApplicationResponse getApplication(
-            UUID businessId
+            String businessId
     );
 
     List<BusinessApplicationResponse> getApplicationsByOwner(
-            UUID ownerUserId
+            String ownerUserId
     );
 
     BusinessApplicationResponse updateApplication(
-            UUID businessId,
+            String businessId,
             UpdateBusinessApplicationRequest request
     );
 
@@ -32,13 +31,13 @@ public interface BusinessApplicationService {
     );
 
     BusinessApplicationResponse rejectApplication(
-            UUID businessId,
+            String businessId,
             String reason,
-            UUID performedBy
+            String performedBy
     );
 
     BusinessApplicationResponse approveApplication(
-            UUID businessId,
-            UUID performedBy
+            String businessId,
+            String performedBy
     );
 }

@@ -1,8 +1,12 @@
 package com.whoami.launch.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ReelLikeResponse {
 
     private String reelId;
@@ -10,6 +14,4 @@ public class ReelLikeResponse {
     private Long totalLikes;
 
     private boolean likedByCurrentUser;
-
-    // Getters & Setters
 }

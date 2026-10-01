@@ -1,25 +1,25 @@
 package com.whoami.businessoperation.repository;
 
-import com.whoami.businessoperation.domain.entity.BusinessAuditLog;
-import com.whoami.businessoperation.domain.enums.AuditAction;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-import java.util.UUID;
+import com.whoami.businessoperation.domain.entity.BusinessAuditLog;
+import com.whoami.businessoperation.domain.enums.AuditAction;
 
 public interface BusinessAuditLogRepository
-        extends JpaRepository<BusinessAuditLog, UUID> {
+        extends JpaRepository<BusinessAuditLog, Long> {
 
     List<BusinessAuditLog> findByBusinessIdOrderByCreatedAtDesc(
-            UUID businessId
+    		String businessId
     );
 
     List<BusinessAuditLog> findByApplicationIdOrderByCreatedAtDesc(
-            UUID applicationId
+    		String applicationId
     );
 
     List<BusinessAuditLog> findByBusinessIdAndActionOrderByCreatedAtDesc(
-            UUID businessId,
+    		String businessId,
             AuditAction action
     );
 }

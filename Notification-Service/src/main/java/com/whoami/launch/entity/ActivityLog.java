@@ -1,17 +1,12 @@
 package com.whoami.launch.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-/**
- * ActivityLog Entity - Logs user activities
- */
 @Entity
 @Table(name = "activity_logs", indexes = {
         @Index(name = "idx_activity_user_id", columnList = "user_id"),
@@ -23,11 +18,14 @@ import java.time.LocalDateTime;
 @Builder
 public class ActivityLog {
 
-    @Id
-    @Column(length = 36)
-    private String activityId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false, length = 36)
+	@Column(nullable = false, unique = true, updatable = false, length = 40)
+	private String activityId;
+
+    @Column(nullable = false, length = 30)
     private String userId;
 
     @Column(nullable = false, length = 255)
@@ -39,4 +37,16 @@ public class ActivityLog {
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void prePersist() {
+        if (activityId == null) {
+            activityId = "ACTIVITY_" +
+                    UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            .substring(0, 12)
+                            .toUpperCase();
+        }
+    }
 }

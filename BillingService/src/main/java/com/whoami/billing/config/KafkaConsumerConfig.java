@@ -1,6 +1,5 @@
 package com.whoami.billing.config;
 
-import com.locato.dto.billing.event.RecurringPaymentRequestedEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +9,8 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+
+import com.locato.constants.events.billing.RecurringPaymentRequestedEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class KafkaConsumerConfig {
                 );
 
         deserializer.addTrustedPackages(
-                "com.locato.dto.billing.event"
+        		"com.locato.constants.events.billing"
         );
 
         Map<String, Object> config = new HashMap<>();

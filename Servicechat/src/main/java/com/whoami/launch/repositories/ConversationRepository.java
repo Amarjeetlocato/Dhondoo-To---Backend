@@ -1,20 +1,23 @@
 package com.whoami.launch.repositories;
 
-import java.util.List;
-
+import com.whoami.launch.entities.Conversation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.whoami.launch.entities.Conversation;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ConversationRepository
-        extends JpaRepository<Conversation, String> {
+        extends JpaRepository<Conversation, Long> {
 
-    Conversation findByConversationId(String conversationId);
+    Optional<Conversation> findByConversationId(
+            String conversationId);
 
-    List<Conversation> findByParticipantsContaining(String participant);
+    List<Conversation> findByParticipantsContaining(
+            String participant);
 
-    List<Conversation> findBySenderIdOrReceiverId(String senderId, String receiverId);
-
+    List<Conversation> findBySenderIdOrReceiverId(
+            String senderId,
+            String receiverId);
 }

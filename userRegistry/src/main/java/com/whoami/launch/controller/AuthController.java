@@ -1,7 +1,6 @@
 package com.whoami.launch.controller;
 
 import java.security.Principal;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,31 +38,48 @@ public class AuthController {
             LoggerFactory.getLogger(AuthController.class);
 
     private final AuthService authService;
+    private final UserService userService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(
+            AuthService authService,
+            UserService userService) {
+
         this.authService = authService;
+        this.userService = userService;
     }
+
+    // ================= GET USER =================
 
     @GetMapping("/{userId}")
-    public Optional<User> getUserByUserId(
+    public ResponseEntity<ApiResponse<User>> getUserByUserId(
             @PathVariable String userId) {
 
-        try {
-			return UserService.getUserByUserId(userId);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
+        return userService.getUserByUserId(userId)
+                .map(user -> ResponseEntity.ok(
+                        new ApiResponse<>(
+                                true,
+                                "User found",
+                                user
+                        )
+                ))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(
+                                new ApiResponse<>(
+                                        false,
+                                        "User not found",
+                                        null
+                                )
+                        ));
     }
+
     // ================= LOGIN =================
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<JwtResponse>> login(
-            @Valid @RequestBody LoginRequest request
-    ) {
+            @Valid @RequestBody LoginRequest request) {
 
-    	System.out.println("sgdsdgsgsdgfsgsgsgf login ");
-        logger.info("Login request received");
+        logger.info("Login request received for email: {}",
+                request.getEmail());
 
         JwtResponse jwtResponse =
                 authService.login(request);
@@ -81,18 +97,20 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<String>> register(
-            @Valid @RequestBody RegisterRequest request
-    ) {
+            @Valid @RequestBody RegisterRequest request) {
 
-        logger.info("////////////Register request received: email={}, fullName={}, phone={}", 
-                request.getEmail(), request.getUsernme() );
+        logger.info(
+                "Registration request received for email: {}",
+                request.getEmail()
+        );
 
-       
         String response =
                 authService.register(request);
-        logger.info("////////////////"+response);
 
-        logger.info("Registration successful for email: {}", request.getEmail());
+        logger.info(
+                "Registration process completed for email: {}",
+                request.getEmail()
+        );
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(
@@ -108,8 +126,7 @@ public class AuthController {
 
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse<String>> verifyOtp(
-            @Valid @RequestBody VerifyOtpRequest request
-    ) {
+            @Valid @RequestBody VerifyOtpRequest request) {
 
         String response =
                 authService.verifyOtp(
@@ -125,88 +142,102 @@ public class AuthController {
                 )
         );
     }
-    
+
+    // ================= FORGOT PASSWORD =================
+
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse<String>> forgotPassword(
-            @RequestBody ForgotPasswordRequest request) {
-
-        System.out.println("=== CONTROLLER HIT ===");
+            @Valid @RequestBody ForgotPasswordRequest request) {
 
         String response =
                 authService.forgotPassword(
-                        request.getEmail());
-
-        System.out.println("=== SERVICE COMPLETED ===");
+                        request.getEmail()
+                );
 
         return ResponseEntity.ok(
-                new ApiResponse<>(true, response, null));
+                new ApiResponse<>(
+                        true,
+                        response,
+                        null
+                )
+        );
     }
-    
-        
+
+    // ================= VERIFY RESET OTP =================
+
     @PostMapping("/verify-reset-otp")
     public ResponseEntity<ApiResponse<String>> verifyResetOtp(
-            @RequestBody VerifyOtpRequest request
-    ) {
+            @Valid @RequestBody VerifyOtpRequest request) {
 
         String response =
                 authService.verifyResetOtp(
                         request.getEmail(),
-                        request.getOtp());
+                        request.getOtp()
+                );
 
         return ResponseEntity.ok(
                 new ApiResponse<>(
                         true,
                         response,
-                        null));
+                        null
+                )
+        );
     }
+
+    // ================= UPDATE PASSWORD =================
+
     @PostMapping("/update-password")
     public ResponseEntity<ApiResponse<String>> updatePassword(
-            @RequestBody UpdatePasswordRequest request
-    ) {
+            @Valid @RequestBody UpdatePasswordRequest request) {
 
         String response =
                 authService.updatePassword(
                         request.getEmail(),
-                        request.getNewPassword());
+                        request.getNewPassword()
+                );
 
         return ResponseEntity.ok(
                 new ApiResponse<>(
                         true,
                         response,
-                        null));
+                        null
+                )
+        );
     }
 
-    
+    // ================= DELETE ACCOUNT =================
+
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<Void>> deleteMyAccount(
             Principal principal) {
 
-        ApiResponse<Void> response =
+        return ResponseEntity.ok(
                 authService.deleteUser(
                         principal.getName()
-                );
-
-        return ResponseEntity.ok(response);
+                )
+        );
     }
-    
+
+    // ================= CHANGE EMAIL =================
+
     @PutMapping("/change-email")
     public ResponseEntity<ApiResponse<Void>> changeEmail(
-            @RequestBody ChangeEmailRequest request,
+            @Valid @RequestBody ChangeEmailRequest request,
             Principal principal) {
 
-        ApiResponse<Void> response =
+        return ResponseEntity.ok(
                 authService.changeEmail(
                         principal.getName(),
                         request.getNewEmail()
-                );
-
-        return ResponseEntity.ok(response);
+                )
+        );
     }
-    
+
+    // ================= REFRESH TOKEN =================
+
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<JwtResponse>>
-    refreshToken(
-            @RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<ApiResponse<JwtResponse>> refreshToken(
+            @Valid @RequestBody RefreshTokenRequest request) {
 
         JwtResponse response =
                 authService.refreshToken(
@@ -221,5 +252,4 @@ public class AuthController {
                 )
         );
     }
-    
 }

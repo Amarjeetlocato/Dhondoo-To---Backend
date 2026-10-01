@@ -4,8 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.whoami.launch.entity.User;
@@ -14,7 +13,6 @@ import com.whoami.launch.exception.UserNotFoundException;
 import com.whoami.launch.repository.UserRepository;
 import com.whoami.launch.service.EmailService;
 import com.whoami.launch.service.OtpService;
-import com.whoami.launch.util.OtpGenerator;
 
 @Service
 public class OtpServiceImpl implements OtpService {
@@ -23,35 +21,31 @@ public class OtpServiceImpl implements OtpService {
     private UserRepository userRepository;
 
     @Autowired
-    private JavaMailSender mailSender;
+    private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private OtpGenerator otpGenerator;
-    
     @Autowired
     private EmailService emailService;
 
-    public String generateAndSendOtp(String email,String otp) {
+    @Override
+    public String generateAndSendOtp(String email, String otp) {
 
-       
-
-        sendOtpEmail(email, otp);
-
-        System.out.println("✅ OTP EMAIL METHOD EXECUTED");
+        emailService.sendForgotPasswordEmail(
+                email,
+                otp
+        );
 
         return otp;
     }
+
     @Override
     public boolean validateOtp(
             String email,
-            String otp
-    ) {
+            String otp) {
 
         Optional<User> optionalUser =
                 userRepository.findByEmail(email);
 
         if (optionalUser.isEmpty()) {
-
             throw new UserNotFoundException(
                     "User not found with email: " + email
             );
@@ -59,17 +53,20 @@ public class OtpServiceImpl implements OtpService {
 
         User user = optionalUser.get();
 
-        // INVALID OTP
-        if (!otp.equals(user.getOtp())) {
+        if (user.getOtp() == null ||
+                !passwordEncoder.matches(
+                        otp,
+                        user.getOtp()
+                )) {
 
             throw new InvalidOtpException(
                     "Invalid OTP provided"
             );
         }
 
-        // OTP EXPIRED
-        if (LocalDateTime.now()
-                .isAfter(user.getOtpExpiry())) {
+        if (user.getOtpExpiry() == null ||
+                LocalDateTime.now()
+                        .isAfter(user.getOtpExpiry())) {
 
             throw new InvalidOtpException(
                     "OTP has expired"
@@ -90,35 +87,9 @@ public class OtpServiceImpl implements OtpService {
             User user = optionalUser.get();
 
             user.setOtp(null);
-
             user.setOtpExpiry(null);
 
             userRepository.save(user);
-        }
-    }
-
-    // ================= SEND EMAIL =================
-
-    public void sendOtpEmail(String toEmail, String otp) {
-
-        try {
-
-        	emailService.sendForgotPasswordEmail(
-        	        toEmail,
-        	        otp
-        	);
-
-
-            System.out.println("✅ EMAIL SENT SUCCESSFULLY");
-            System.out.println("📧 Sent To: " + toEmail);
-            System.out.println("🔐 OTP: " + otp);
-
-        } catch (Exception e) {
-
-            System.out.println("❌ EMAIL FAILED");
-            e.printStackTrace();
-            throw new RuntimeException(
-                    "Unable to send OTP email");
         }
     }
 }

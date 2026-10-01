@@ -1,23 +1,23 @@
 package com.whoami.businessoperation.repository;
 
-import com.whoami.businessoperation.domain.entity.BusinessVerificationHistory;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-import java.util.UUID;
+import com.whoami.businessoperation.domain.entity.BusinessVerificationHistory;
 
 public interface BusinessVerificationHistoryRepository
-        extends JpaRepository<BusinessVerificationHistory, UUID> {
+        extends JpaRepository<BusinessVerificationHistory, Long> {
 
     List<BusinessVerificationHistory> findByBusinessIdOrderByCreatedAtDesc(
-            UUID businessId
+    		String businessId
     );
 
     List<BusinessVerificationHistory> findByApplicationIdOrderByCreatedAtDesc(
-            UUID applicationId
+    		String applicationId
     );
 
     List<BusinessVerificationHistory> findByVerificationIdOrderByCreatedAtDesc(
-            UUID verificationId
+    		String verificationId
     );
 }

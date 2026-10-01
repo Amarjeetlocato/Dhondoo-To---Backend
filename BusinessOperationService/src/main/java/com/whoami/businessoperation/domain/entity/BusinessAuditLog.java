@@ -26,20 +26,20 @@ public class BusinessAuditLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private Long id;
 
     @Column(name = "business_id", nullable = false)
-    private UUID businessId;
+    private String businessId;
 
     @Column(name = "application_id")
-    private UUID applicationId;
+    private String applicationId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "action", nullable = false, length = 50)
     private AuditAction action;
 
     @Column(name = "performed_by")
-    private UUID performedBy;
+    private String performedBy;
 
     @Column(name = "performed_by_role", length = 50)
     private String performedByRole;

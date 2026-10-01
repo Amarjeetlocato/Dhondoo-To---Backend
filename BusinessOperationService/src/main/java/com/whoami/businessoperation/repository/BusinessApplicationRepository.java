@@ -6,23 +6,32 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface BusinessApplicationRepository
-        extends JpaRepository<BusinessApplication, UUID> {
+        extends JpaRepository<BusinessApplication, Long> {
 
-    Optional<BusinessApplication> findByBusinessId(UUID businessId);
-
-    Optional<BusinessApplication> findByOwnerUserIdAndBusinessId(
-            UUID ownerUserId,
-            UUID businessId
+    Optional<BusinessApplication> findByApplicationId(
+            String applicationId
     );
 
-    List<BusinessApplication> findByOwnerUserId(UUID ownerUserId);
+    Optional<BusinessApplication> findByBusinessId(
+            String businessId
+    );
+
+    Optional<BusinessApplication> findByOwnerUserIdAndBusinessId(
+            String ownerUserId,
+            String businessId
+    );
+
+    List<BusinessApplication> findByOwnerUserId(
+            String ownerUserId
+    );
 
     List<BusinessApplication> findByApplicationStatus(
             BusinessApplicationStatus applicationStatus
     );
 
-    boolean existsByBusinessId(UUID businessId);
+    boolean existsByBusinessId(
+            String businessId
+    );
 }

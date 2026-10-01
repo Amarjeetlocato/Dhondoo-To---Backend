@@ -1,18 +1,11 @@
 package com.whoami.launch.entity;
 
-import java.util.List;
+import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-
 
 @Entity
 @Table(name = "reels")
@@ -20,36 +13,48 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Reel {
-    
+
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(
+            unique = true,
+            nullable = false,
+            updatable = false,
+            length = 30
+    )
     private String reelId;
+
+    @Column(nullable = false, length = 30)
+    private String businessId;
     
-    @Column(nullable = false)
-    private String shopId;
-    
-    
-    
-    @Column
+
     private String reelVideo;
-    
-    @Column
+
     private String reelThumbnail;
 
-    @Column
-    private String reelthumbnailPublicId;
+    private String reelThumbnailPublicId;
 
-    @Column
-    private String reelvideoPublicId;
-    
+    private String reelVideoPublicId;
+
     @Column(columnDefinition = "TEXT")
     private String reelDescription;
-    
+
     @Column(columnDefinition = "TEXT")
     private String reelReviews;
-    
-    @Column
+
     private Double reelRatings;
-    
-   
+
+    @PrePersist
+    protected void prePersist() {
+        if (reelId == null) {
+            reelId = "REEL_" +
+                    UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            .substring(0, 12)
+                            .toUpperCase();
+        }
+    }
 }

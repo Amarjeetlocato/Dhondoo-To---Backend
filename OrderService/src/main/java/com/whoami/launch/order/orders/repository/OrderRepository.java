@@ -2,16 +2,18 @@ package com.whoami.launch.order.orders.repository;
 
 import com.whoami.launch.order.orders.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
+@Repository
+public interface OrderRepository
+        extends JpaRepository<Order, Long> {
 
     List<Order> findByCustomerId(String customerId);
 
-    List<Order> findByShopId(String shopId);
+    List<Order> findByBusinessId(String businessId);
 
     Optional<Order> findByOrderId(String orderId);
-
 }

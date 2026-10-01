@@ -1,28 +1,21 @@
 package com.whoami.launch.repository;
 
-import java.util.Optional;
-
+import com.whoami.launch.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.whoami.launch.entity.User;
+import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Integer> {
+public interface UserRepository extends JpaRepository<User, Long> {
 
-                     
-	Optional<User> findByEmail(String email);
-	Optional<User> findByUserId(String userId);
-	boolean existsByUsername(String username);
-	
-	
+    Optional<User> findByEmail(String email);
 
-	Optional<User> findByEmailOrUsername(String email, String username);
-	Optional<User> findByUserIdAndDeletedFalse(String id);
-	Optional<User> findByEmailAndDeletedFalse(String email);
+    Optional<User> findByUserId(String userId);
 
-	
+    Optional<User> findByUserIdAndDeletedFalse(String userId);
 
-	boolean existsByEmail(String email);
+    Optional<User> findByEmailAndDeletedFalse(String email);
 
+    boolean existsByEmail(String email);
 }

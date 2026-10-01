@@ -8,10 +8,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NearbyServiceDTO {
+
     private String serviceId;
     private String serviceName;
-    private String shopId;
+
+    private String businessId;
+    private String businessName;
+
     private Double price;
     private String serviceDescription;
+
     private Double distance;
 }
+

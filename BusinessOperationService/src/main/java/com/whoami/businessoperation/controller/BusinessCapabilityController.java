@@ -1,16 +1,22 @@
 package com.whoami.businessoperation.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.whoami.businessoperation.domain.enums.CapabilityType;
 import com.whoami.businessoperation.dto.request.UpdateBusinessCapabilityRequest;
 import com.whoami.businessoperation.dto.response.BusinessCapabilityResponse;
 import com.whoami.businessoperation.service.BusinessCapabilityService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/business-operations/capabilities")
@@ -48,7 +54,7 @@ public class BusinessCapabilityController {
 
     @GetMapping("/{businessId}/{capabilityType}")
     public ResponseEntity<BusinessCapabilityResponse> getCapability(
-            @PathVariable UUID businessId,
+            @PathVariable String businessId,
             @PathVariable CapabilityType capabilityType) {
 
         return ResponseEntity.ok(
@@ -62,7 +68,7 @@ public class BusinessCapabilityController {
     @GetMapping("/business/{businessId}")
     public ResponseEntity<List<BusinessCapabilityResponse>>
     getBusinessCapabilities(
-            @PathVariable UUID businessId) {
+            @PathVariable String businessId) {
 
         return ResponseEntity.ok(
                 businessCapabilityService

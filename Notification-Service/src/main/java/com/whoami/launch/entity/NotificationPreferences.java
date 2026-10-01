@@ -1,18 +1,13 @@
 package com.whoami.launch.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-/**
- * NotificationPreferences Entity - Stores user notification preferences
- */
 @Entity
 @Table(name = "notification_preferences", indexes = {
         @Index(name = "idx_pref_user_id", columnList = "user_id", unique = true)
@@ -23,11 +18,14 @@ import java.time.LocalDateTime;
 @Builder
 public class NotificationPreferences {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long preferenceId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false, length = 36, unique = true)
+	@Column(nullable = false, unique = true, length = 40)
+	private String preferenceId;
+
+    @Column(nullable = false, length = 30, unique = true)
     private String userId;
 
     @Column(nullable = false)
@@ -73,4 +71,16 @@ public class NotificationPreferences {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void prePersist() {
+        if (preferenceId == null) {
+            preferenceId = "PREFERENCE_" +
+                    UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            .substring(0, 12)
+                            .toUpperCase();
+        }
+    }
 }

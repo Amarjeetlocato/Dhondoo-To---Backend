@@ -6,9 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * DTO for notification preferences request
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,8 +28,8 @@ public class NotificationPreferencesRequest {
     @Schema(description = "Enable product notifications", example = "true")
     private Boolean productNotification;
 
-    @Schema(description = "Enable shop notifications", example = "true")
-    private Boolean shopNotification;
+    @Schema(description = "Enable business notifications", example = "true")
+    private Boolean businessNotification;
 
     @Schema(description = "Enable service notifications", example = "true")
     private Boolean serviceNotification;
@@ -43,3 +40,4 @@ public class NotificationPreferencesRequest {
     @Schema(description = "Enable follow notifications", example = "true")
     private Boolean followNotification;
 }
+

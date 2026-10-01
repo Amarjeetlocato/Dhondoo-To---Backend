@@ -4,110 +4,44 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import com.locato.constants.events.location.LocationCreatedEvent;
 import com.whoami.launch.dto.LocationResponseDTO;
 import com.whoami.launch.entity.Location;
-import com.whoami.launch.dto.LocationCreatedEvent;
-import com.whoami.launch.repository.LocationRepository;
 
-@Service
-public class LocationService {
-    
-    @Autowired
-    private LocationRepository locationRepository;
-    
-    public Location createLocation(Location location) {
+public interface LocationService {
 
-        if (locationRepository.existsByUserId(location.getUserId())) {
-            throw new RuntimeException(
-                    "Location already exists for userId: " + location.getUserId()
-            );
-        }
+    Location createLocation(
+            Location location);
 
-        location.setTimestamp(LocalDateTime.now());
+    Location updateLocation(
+            String locationId,
+            Location locationDetails);
 
-        return locationRepository.save(location);
-    } 
-   
-    public Location updateLocation(String userId, Location locationDetails) {
-    	Optional<Location> location = locationRepository.findByUserId(userId);
-    	if (location.isPresent()) {
-            Location existingLocation = location.get();
-            if (locationDetails.getLatitude() != null) {
-                existingLocation.setLatitude(locationDetails.getLatitude());
-            }
-            if (locationDetails.getLongitude() != null) {
-                existingLocation.setLongitude(locationDetails.getLongitude());
-            }
-            if (locationDetails.getTimestamp() != null) {
-                existingLocation.setTimestamp(locationDetails.getTimestamp());
-            }
-            existingLocation.setTimestamp(LocalDateTime.now());
-            return locationRepository.save(existingLocation);
-        }
-        return null;
-    }
-    
-    public Optional<Location> getLocationById(String userId) {
-        return locationRepository.findById(userId);
-    }
-    
-    public Optional<Location> getLocationsByUserId(String userId) {
-        return locationRepository.findByUserId(userId);
-    }
-    
-    public List<Location> getLocationsByUserIdOrderedByTime(String userId) {
-        return locationRepository.findByUserIdOrderByTimestampDesc(userId);
-    }
-    
-    public List<Location> getLocationsByTimeRange(LocalDateTime startTime, LocalDateTime endTime) {
-        return locationRepository.findByTimestampBetween(startTime, endTime);
-    }
-    
-    public List<Location> getLocationsByCoordinates(Double latitude, Double longitude) {
-        return locationRepository.findByLatitudeAndLongitude(latitude, longitude);
-    }
-    
-    public List<Location> getAllLocations() {
-        return locationRepository.findAll();
-    }
-    
-    public void deleteLocation(String locationId) {
-        locationRepository.deleteById(locationId);
-    }
-    
-    public LocationResponseDTO toResponseDTO(Location location) {
+    Optional<Location> getLocationById(
+            String locationId);
 
-        if (location == null) {
-            return null;
-        }
+    List<Location> getLocationsByUserId(
+            String userId);
 
-        return new LocationResponseDTO(
-                location.getLocationId(),
-                location.getUserId(),
-                location.getLatitude(),
-                location.getLongitude(),
-                location.getTimestamp()
-        );
-    }
+    List<Location> getLocationsByUserIdOrderedByTime(
+            String userId);
 
-    public void createLocationFromUser(LocationCreatedEvent event) {
+    List<Location> getLocationsByTimeRange(
+            LocalDateTime startTime,
+            LocalDateTime endTime);
 
-        if (locationRepository.existsByUserId(event.getUserId())) {
-            return;
-        }
+    List<Location> getLocationsByCoordinates(
+            Double latitude,
+            Double longitude);
 
-        Location location = new Location();
+    List<Location> getAllLocations();
 
-        location.setUserId(event.getUserId());
+    void deleteLocation(
+            String locationId);
 
-        // latitude and longitude will be null initially
-        location.setTimestamp(LocalDateTime.now());
+    LocationResponseDTO toResponseDTO(
+            Location location);
 
-        locationRepository.save(location);
-    }
-
-	         
+    void createLocationFromUser(
+            LocationCreatedEvent event);
 }

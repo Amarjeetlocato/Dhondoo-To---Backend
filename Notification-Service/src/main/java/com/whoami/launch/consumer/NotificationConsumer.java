@@ -3,7 +3,7 @@ package com.whoami.launch.consumer;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
-import com.locato.dto.ChatNotificationEvent;
+import com.locato.constants.events.chat.ChatNotificationEvent;
 import com.whoami.launch.dto.NotificationRequest;
 import com.whoami.launch.enums.NotificationType;
 import com.whoami.launch.service.NotificationService;

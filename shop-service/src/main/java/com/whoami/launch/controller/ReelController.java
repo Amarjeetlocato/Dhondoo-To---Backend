@@ -1,102 +1,185 @@
 package com.whoami.launch.controller;
 
-import com.whoami.launch.entity.Reel;
 import com.whoami.launch.dto.ApiResponse;
 import com.whoami.launch.dto.ReelResponseDTO;
 import com.whoami.launch.dto.ReelSummaryDTO;
+import com.whoami.launch.entity.Reel;
+import com.whoami.launch.exception.ResourceNotFoundException;
 import com.whoami.launch.service.ReelService;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/reels")
+@RequiredArgsConstructor
 public class ReelController {
-    
-    @Autowired
-    private ReelService reelService;
-    
-    // GET all ree
+
+    private final ReelService reelService;
+
+    // ================= GET ALL =================
+
     @GetMapping
     public ResponseEntity<List<Reel>> getAllReels() {
-        return ResponseEntity.ok(reelService.getAllReels());
+
+        return ResponseEntity.ok(
+                reelService.getAllReels()
+        );
     }
-    
-    // GET reel by ID ye wa 
+
+    // ================= GET BY ID =================
+
     @GetMapping("/{reelId}")
-    public ResponseEntity<Optional<Reel>> getReelById(@PathVariable String reelId) {
-        Optional<Reel> reel = reelService.getReelById(reelId);
-        if (reel.isPresent()) {
-            return ResponseEntity.ok(reel);
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Reel> getReelById(
+            @PathVariable String reelId) {
+
+        return reelService
+                .getReelById(reelId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() ->
+                        ResponseEntity.notFound().build()
+                );
     }
-    
-    // GET reels by shop ID
-    @GetMapping("/shop/{shopId}")
-    public ResponseEntity<List<Reel>> getReelsByShopId(@PathVariable String shopId) {
-        List<Reel> reels = reelService.getReelsByShopId(shopId);
-        return ResponseEntity.ok(reels);
+
+    // ================= GET BY BUSINESS =================
+
+    @GetMapping("/business/{businessId}")
+    public ResponseEntity<List<Reel>> getReelsByBusinessId(
+            @PathVariable String businessId) {
+
+        return ResponseEntity.ok(
+                reelService.getReelsByBusinessId(
+                        businessId
+                )
+        );
     }
-    
-    // GET reels by search query (description)
+
+    // ================= SEARCH =================
+
     @GetMapping("/search/query")
-    public ResponseEntity<List<Reel>> searchReels(@RequestParam String query) {
-        List<Reel> reels = reelService.searchReels(query);
-        return ResponseEntity.ok(reels);
+    public ResponseEntity<List<Reel>> searchReels(
+            @RequestParam String query) {
+
+        return ResponseEntity.ok(
+                reelService.searchReels(query)
+        );
     }
-    
-    // POST create new reel
-    @PostMapping("/create")
-    public ResponseEntity<Reel> createReel(@RequestBody Reel reel) {
-        Reel createdReel = reelService.createReel(reel);
-        return ResponseEntity.ok(createdReel);
+
+    // ================= CREATE =================
+
+    @PostMapping
+    public ResponseEntity<Reel> createReel(
+            @RequestBody Reel reel) {
+
+        return ResponseEntity.ok(
+                reelService.createReel(reel)
+        );
     }
-    
-    // PUT update reel
+
+    // ================= UPDATE =================
+
     @PutMapping("/{reelId}")
-    public ResponseEntity<Reel> updateReel(@PathVariable String reelId, @RequestBody Reel reelDetails) {
-        Reel updatedReel = reelService.updateReel(reelId, reelDetails);
-        if (updatedReel != null) {
-            return ResponseEntity.ok(updatedReel);
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Reel> updateReel(
+            @PathVariable String reelId,
+            @RequestBody Reel reelDetails) {
+
+        Reel updatedReel =
+                reelService.updateReel(
+                        reelId,
+                        reelDetails
+                );
+
+        return ResponseEntity.ok(updatedReel);
     }
-    
-    // DELETE reel
+
+    // ================= DELETE =================
+
     @DeleteMapping("/{reelId}")
-    public ResponseEntity<Void> deleteReel(@PathVariable String reelId) {
+    public ResponseEntity<Void> deleteReel(
+            @PathVariable String reelId) {
+
         reelService.deleteReel(reelId);
+
         return ResponseEntity.noContent().build();
     }
-    
-    // Internal API endpoints for Feign clients
-    @GetMapping("/internal-api/reels/{reelId}")
-    public ResponseEntity<ApiResponse<ReelResponseDTO>> getInternalReelById(@PathVariable String reelId) {
-        Optional<Reel> reel = reelService.getReelById(reelId);
-        if (reel.isPresent()) {
-            ReelResponseDTO dto = reelService.toResponseDTO(reel.get());
-            return ResponseEntity.ok(ApiResponse.success("Reel retrieved", dto));
-        }
-        return ResponseEntity.ok(ApiResponse.error("Reel not found"));
+
+    // ================= INTERNAL - REEL =================
+
+    @GetMapping("/internal/reels/{reelId}")
+    public ResponseEntity<ApiResponse<ReelResponseDTO>>
+    getInternalReelById(
+            @PathVariable String reelId) {
+
+        Reel reel =
+                reelService.getReelById(reelId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Reel not found: " + reelId
+                                )
+                        );
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Reel retrieved",
+                        reelService.toResponseDTO(reel)
+                )
+        );
     }
-    
-    @GetMapping("/internal-api/reels/shop/{shopId}")
-    public ResponseEntity<ApiResponse<List<ReelSummaryDTO>>> getInternalReelsByShopId(@PathVariable String shopId) {
-        List<Reel> reels = reelService.getReelsByShopId(shopId);
-        if (!reels.isEmpty()) {
-            List<ReelSummaryDTO> dtos = reels.stream().map(reelService::toSummaryDTO).toList();
-            return ResponseEntity.ok(ApiResponse.success("Reels retrieved", dtos));
+
+    // ================= INTERNAL - BUSINESS =================
+
+    @GetMapping("/internal/reels/business/{businessId}")
+    public ResponseEntity<ApiResponse<List<ReelSummaryDTO>>>
+    getInternalReelsByBusinessId(
+            @PathVariable String businessId) {
+
+        List<Reel> reels =
+                reelService.getReelsByBusinessId(
+                        businessId
+                );
+
+        if (reels.isEmpty()) {
+            return ResponseEntity.ok(
+                    ApiResponse.error(
+                            "No reels found"
+                    )
+            );
         }
-        return ResponseEntity.ok(ApiResponse.error("No reels found"));
+
+        List<ReelSummaryDTO> dtos =
+                reels.stream()
+                        .map(reelService::toSummaryDTO)
+                        .toList();
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Reels retrieved",
+                        dtos
+                )
+        );
     }
-    
-    @GetMapping("/internal-api/reels/exists/{reelId}")
-    public ResponseEntity<ApiResponse<Boolean>> checkReelExists(@PathVariable String reelId) {
-        Optional<Reel> reel = reelService.getReelById(reelId);
-        return ResponseEntity.ok(ApiResponse.success("Check completed", reel.isPresent()));
+
+    // ================= INTERNAL - EXISTS =================
+
+    @GetMapping("/internal/reels/exists/{reelId}")
+    public ResponseEntity<ApiResponse<Boolean>>
+    checkReelExists(
+            @PathVariable String reelId) {
+
+        boolean exists =
+                reelService
+                        .getReelById(reelId)
+                        .isPresent();
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Check completed",
+                        exists
+                )
+        );
     }
 }

@@ -1,16 +1,18 @@
 package com.whoami.billing.kafka;
 
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.locato.dto.billing.event.BillingCreatedEvent;
-import com.locato.dto.billing.event.PaymentCompletedEvent;
-import com.locato.dto.billing.event.PaymentFailedEvent;
-import com.locato.dto.billing.event.RefundCompletedEvent;
-import com.locato.topics.BillingTopics;
+import com.locato.constants.events.billing.BillingCreatedEvent;
+import com.locato.constants.events.billing.PaymentCompletedEvent;
+import com.locato.constants.events.billing.PaymentFailedEvent;
+import com.locato.constants.events.billing.RefundCompletedEvent;
+import com.locato.constants.topics.KafkaTopics;
 import com.whoami.billing.domain.entity.OutboxEvent;
 import com.whoami.billing.service.OutboxService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -24,7 +26,7 @@ public class BillingEventProducer {
                 "BillingTransaction",
                 event.getTransactionId(),
                 "BILLING_CREATED",
-                BillingTopics.BILLING_CREATED,
+                KafkaTopics.BILLING_EVENTS,
                 event
         );
     }
@@ -34,7 +36,7 @@ public class BillingEventProducer {
                 "Payment",
                 event.getTransactionId(),
                 "PAYMENT_COMPLETED",
-                BillingTopics.PAYMENT_COMPLETED,
+                KafkaTopics.BILLING_EVENTS,
                 event
         );
     }
@@ -44,7 +46,7 @@ public class BillingEventProducer {
                 "Payment",
                 event.getTransactionId(),
                 "PAYMENT_FAILED",
-                BillingTopics.PAYMENT_FAILED,
+                KafkaTopics.BILLING_EVENTS,
                 event
         );
     }
@@ -54,7 +56,7 @@ public class BillingEventProducer {
                 "Refund",
                 event.getTransactionId(),
                 "REFUND_COMPLETED",
-                BillingTopics.REFUND_COMPLETED,
+                KafkaTopics.BILLING_EVENTS,
                 event
         );
     }

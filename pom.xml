@@ -127,88 +127,73 @@
     <!-- BUILD -->
     <!-- ===================================================== -->
 
-    <build>
+   <build>
 
-        <pluginManagement>
+    <pluginManagement>
 
-            <plugins>
+        <plugins>
 
-                <!-- Spring Boot Plugin -->
+            <!-- Spring Boot Plugin -->
+            <plugin>
 
-                <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
 
-                    <groupId>org.springframework.boot</groupId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
 
-                    <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
 
-                    <version>${spring.boot.version}</version>
+            <!-- Surefire Plugin -->
+            <plugin>
 
-                    <executions>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.3</version>
 
-                        <execution>
+            </plugin>
 
-                            <goals>
+        </plugins>
 
-                                <goal>repackage</goal>
+    </pluginManagement>
 
-                            </goals>
+    <plugins>
 
-                        </execution>
+        <!-- Compiler Plugin -->
+        <plugin>
 
-                    </executions>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.14.0</version>
 
-                </plugin>
+            <configuration>
 
-                <!-- Compiler Plugin -->
+                <release>${java.version}</release>
 
-                <plugin>
+                <parameters>true</parameters>
 
-                    <groupId>org.apache.maven.plugins</groupId>
+                <annotationProcessorPaths>
 
-                    <artifactId>maven-compiler-plugin</artifactId>
+                    <path>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok</artifactId>
+                        <version>${lombok.version}</version>
+                    </path>
 
-                    <version>3.14.0</version>
+                </annotationProcessorPaths>
 
-                    <configuration>
+            </configuration>
 
-                        <release>${java.version}</release>
+        </plugin>
 
-                        <parameters>true</parameters>
+    </plugins>
 
-                        <annotationProcessorPaths>
-
-                            <path>
-
-                                <groupId>org.projectlombok</groupId>
-
-                                <artifactId>lombok</artifactId>
-
-                                <version>${lombok.version}</version>
-
-                            </path>
-
-                        </annotationProcessorPaths>
-
-                    </configuration>
-
-                </plugin>
-
-                <!-- Surefire Plugin -->
-
-                <plugin>
-
-                    <groupId>org.apache.maven.plugins</groupId>
-
-                    <artifactId>maven-surefire-plugin</artifactId>
-
-                    <version>3.5.3</version>
-
-                </plugin>
-
-            </plugins>
-
-        </pluginManagement>
-
-    </build>
+</build>
 
 </project>

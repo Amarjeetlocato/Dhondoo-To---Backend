@@ -1,156 +1,223 @@
 package com.whoami.launch.controller;
 
-import com.whoami.launch.entity.CustomerProfile;
-import com.whoami.launch.repository.CustomerProfileRepository;
-import com.whoami.launch.dto.ApiResponse;
-import com.whoami.launch.dto.CustomerProfileCreatedEvent;
-import com.whoami.launch.dto.CustomerProfileResponseDTO;
-import com.whoami.launch.dto.CustomerProfileSummaryDTO;
-import com.whoami.launch.dto.UserProfileResponse;
-import com.whoami.launch.service.CustomerProfileService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Optional;
+import com.whoami.launch.dto.ApiResponse;
+import com.whoami.launch.dto.CustomerProfileResponseDTO;
+import com.whoami.launch.entity.CustomerProfile;
+import com.whoami.launch.service.CustomerProfileService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequestMapping("/api/customer-profiles")
+@RequiredArgsConstructor
 public class CustomerProfileController {
-    
-    @Autowired
-    private CustomerProfileService customerProfileService;
-    
-    @Autowired
-    private CustomerProfileRepository customerProfileRepository;
-    
-   
-    
-    
-    @KafkaListener(topics = "customer-created-topic", groupId = "shop-group")
-    public void createCustomer(CustomerProfileCreatedEvent request) {
 
-        CustomerProfile profile = new CustomerProfile();
+    private final CustomerProfileService customerProfileService;
 
-        profile.setUserId(request.getUserId());
-        profile.setUsername(request.getUsername());
-        profile.setEmail(request.getEmail());
+    // ================= GET ALL =================
 
-        customerProfileService.createCustomerProfile(profile);
-    }
-    // Public API endpoints
-    @GetMapping("/api/customer-profiles")
-    public ResponseEntity<List<CustomerProfile>> getAllCustomerProfiles() {
-        return ResponseEntity.ok(customerProfileService.getAllCustomerProfiles());
-    }
-    
-    @GetMapping("/api/customer-profiles/{customerId}")
-    public ResponseEntity<Optional<CustomerProfile>> getCustomerProfileById(@PathVariable String customerId) {
-        Optional<CustomerProfile> profile = customerProfileService.getCustomerProfileById(customerId);
-        if (profile.isPresent()) {
-            return ResponseEntity.ok(profile);
-        }
-        return ResponseEntity.notFound().build();
-    }
-    
-    @GetMapping("/api/customer-profiles/user/{userId}")
-    public ResponseEntity<Optional<CustomerProfile>> getCustomerProfileByUserId(@PathVariable String userId) {
-        Optional<CustomerProfile> profile = customerProfileService.getCustomerProfileByUserId(userId);
-        if (profile.isPresent()) {
-            return ResponseEntity.ok(profile);
-        }
-        return ResponseEntity.notFound().build();
-    }
-    
-    @GetMapping("/api/customer-profiles/search/username/{username}")
-    public ResponseEntity<Optional<CustomerProfile>> getCustomerProfileByUsername(@PathVariable String username) {
-        Optional<CustomerProfile> profile = customerProfileService.getCustomerProfileByUsername(username);
-        if (profile.isPresent()) {
-            return ResponseEntity.ok(profile);
-        }
-        return ResponseEntity.notFound().build();
-    }
-    
-    @GetMapping("/api/customer-profiles/search/email/{email}")
-    public ResponseEntity<Optional<CustomerProfile>> getCustomerProfileByEmail(@PathVariable String email) {
-        Optional<CustomerProfile> profile = customerProfileService.getCustomerProfileByEmail(email);
-        if (profile.isPresent()) {
-            return ResponseEntity.ok(profile);
-        }
-        return ResponseEntity.notFound().build();
-    }
-    
-    
-   
-    @PutMapping("/api/customer-profiles/{customerId}")
-    public ResponseEntity<CustomerProfile> updateCustomerProfile(@PathVariable String customerId, @RequestBody CustomerProfile customerProfileDetails) {
-        CustomerProfile updatedProfile = customerProfileService.updateCustomerProfile(customerId, customerProfileDetails);
-        if (updatedProfile != null) {
-            return ResponseEntity.ok(updatedProfile);
-        }
-        return ResponseEntity.notFound().build();
-    }
-    
-    @DeleteMapping("/api/customer-profiles/{customerId}")
-    public ResponseEntity<Void> deleteCustomerProfile(@PathVariable String customerId) {
-        customerProfileService.deleteCustomerProfile(customerId);
-        return ResponseEntity.noContent().build();
-    }
-    
-    // Internal API endpoints for Feign clients
-    @GetMapping("/internal-api/customer-profiles/user/{userId}")
-    public ResponseEntity<ApiResponse<CustomerProfileResponseDTO>> getInternalCustomerProfileByUserId(@PathVariable String userId) {
-        Optional<CustomerProfile> profile = customerProfileService.getCustomerProfileByUserId(userId);
-        if (profile.isPresent()) {
-            CustomerProfileResponseDTO dto = customerProfileService.toResponseDTO(profile.get());
-            return ResponseEntity.ok(ApiResponse.success("Customer profile retrieved", dto));
-        }
-        return ResponseEntity.ok(ApiResponse.error("Customer profile not found"));
-    }
-    
-    @GetMapping("/internal-api/customer-profiles/username/{username}")
-    public ResponseEntity<ApiResponse<CustomerProfileResponseDTO>> getInternalCustomerProfileByUsername(@PathVariable String username) {
-        Optional<CustomerProfile> profile = customerProfileService.getCustomerProfileByUsername(username);
-        if (profile.isPresent()) {
-            CustomerProfileResponseDTO dto = customerProfileService.toResponseDTO(profile.get());
-            return ResponseEntity.ok(ApiResponse.success("Customer profile retrieved", dto));
-        }
-        return ResponseEntity.ok(ApiResponse.error("Customer profile not found"));
-    }
-    
-    @GetMapping("/internal-api/customer-profiles/email/{email}")
-    public ResponseEntity<ApiResponse<CustomerProfileResponseDTO>> getInternalCustomerProfileByEmail(@PathVariable String email) {
-        Optional<CustomerProfile> profile = customerProfileService.getCustomerProfileByEmail(email);
-        if (profile.isPresent()) {
-            CustomerProfileResponseDTO dto = customerProfileService.toResponseDTO(profile.get());
-            return ResponseEntity.ok(ApiResponse.success("Customer profile retrieved", dto));
-        }
-        return ResponseEntity.ok(ApiResponse.error("Customer profile not found"));
-    }
-    
-    @GetMapping("/internal-api/customer-profiles/exists/{userId}")
-    public ResponseEntity<ApiResponse<Boolean>> checkCustomerProfileExists(@PathVariable String userId) {
-        Optional<CustomerProfile> profile = customerProfileService.getCustomerProfileByUserId(userId);
-        return ResponseEntity.ok(ApiResponse.success("Check completed", profile.isPresent()));
-    }
-    
-    @GetMapping("/{userId}/profile")
-    public UserProfileResponse getUserProfile(
-            @PathVariable String userId) {
+    @GetMapping
+    public ResponseEntity<ApiResponse<Page<CustomerProfileResponseDTO>>>
+    getAllCustomerProfiles(Pageable pageable) {
 
-        CustomerProfile profile =
-                customerProfileRepository
-                        .findByUserId(userId)
-                        .orElseThrow();
+        Page<CustomerProfileResponseDTO> profiles =
+                customerProfileService
+                        .getAllcustomers(pageable)
+                        .getContent()
+                        .stream()
+                        .collect(
+                                java.util.stream.Collectors.collectingAndThen(
+                                        java.util.stream.Collectors.toList(),
+                                        list -> new org.springframework.data.domain.PageImpl<>(
+                                                list,
+                                                pageable,
+                                                list.size()
+                                        )
+                                )
+                        );
 
-        return new UserProfileResponse(
-                profile.getUserId(),
-                profile.getUsername(),
-                profile.getLogoUrl()
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Customer profiles retrieved",
+                        profiles
+                )
         );
     }
-    
-    
-}
 
+    // ================= GET BY USER ID =================
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<ApiResponse<CustomerProfileResponseDTO>>
+    getCustomerProfileByUserId(
+            @PathVariable String userId) {
+
+        return customerProfileService
+                .getCustomerProfileByUserId(userId)
+                .map(profile ->
+                        ResponseEntity.ok(
+                                ApiResponse.success(
+                                        "Customer profile retrieved",
+                                        customerProfileService.toResponseDTO(profile)
+                                )
+                        )
+                )
+                .orElseGet(() ->
+                        ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(
+                                        ApiResponse.error(
+                                                "Customer profile not found"
+                                        )
+                                )
+                );
+    }
+
+    // ================= GET BY EMAIL =================
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<ApiResponse<CustomerProfileResponseDTO>>
+    getCustomerProfileByEmail(
+            @PathVariable String email) {
+
+        return customerProfileService
+                .getCustomerProfileByEmail(email)
+                .map(profile ->
+                        ResponseEntity.ok(
+                                ApiResponse.success(
+                                        "Customer profile retrieved",
+                                        customerProfileService.toResponseDTO(profile)
+                                )
+                        )
+                )
+                .orElseGet(() ->
+                        ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(
+                                        ApiResponse.error(
+                                                "Customer profile not found"
+                                        )
+                                )
+                );
+    }
+
+    // ================= UPDATE =================
+
+    @PutMapping("/{customerId}")
+    public ResponseEntity<ApiResponse<CustomerProfileResponseDTO>>
+    updateCustomerProfile(
+            @PathVariable String customerId,
+            @Valid @RequestBody CustomerProfile customerProfileDetails) {
+
+        CustomerProfile updatedProfile =
+                customerProfileService.updateCustomerProfile(
+                        customerId,
+                        customerProfileDetails
+                );
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Customer profile updated successfully",
+                        customerProfileService.toResponseDTO(updatedProfile)
+                )
+        );
+    }
+
+    // ================= DELETE =================
+
+    @DeleteMapping("/{customerId}")
+    public ResponseEntity<ApiResponse<Void>>
+    deleteCustomerProfile(
+            @PathVariable String customerId) {
+
+        customerProfileService.deleteCustomerProfile(customerId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Customer profile deleted successfully",
+                        null
+                )
+        );
+    }
+
+    // ================= INTERNAL - BY USER ID =================
+
+    @GetMapping("/internal/user/{userId}")
+    public ResponseEntity<ApiResponse<CustomerProfileResponseDTO>>
+    getInternalCustomerProfileByUserId(
+            @PathVariable String userId) {
+
+        return customerProfileService
+                .getCustomerProfileByUserId(userId)
+                .map(profile ->
+                        ResponseEntity.ok(
+                                ApiResponse.success(
+                                        "Customer profile retrieved",
+                                        customerProfileService.toResponseDTO(profile)
+                                )
+                        )
+                )
+                .orElseGet(() ->
+                        ResponseEntity.ok(
+                                ApiResponse.error(
+                                        "Customer profile not found"
+                                )
+                        )
+                );
+    }
+
+    // ================= INTERNAL - BY EMAIL =================
+
+    @GetMapping("/internal/email/{email}")
+    public ResponseEntity<ApiResponse<CustomerProfileResponseDTO>>
+    getInternalCustomerProfileByEmail(
+            @PathVariable String email) {
+
+        return customerProfileService
+                .getCustomerProfileByEmail(email)
+                .map(profile ->
+                        ResponseEntity.ok(
+                                ApiResponse.success(
+                                        "Customer profile retrieved",
+                                        customerProfileService.toResponseDTO(profile)
+                                )
+                        )
+                )
+                .orElseGet(() ->
+                        ResponseEntity.ok(
+                                ApiResponse.error(
+                                        "Customer profile not found"
+                                ))
+                        );
+    }
+
+    // ================= INTERNAL - EXISTS =================
+
+    @GetMapping("/internal/exists/{userId}")
+    public ResponseEntity<ApiResponse<Boolean>>
+    checkCustomerProfileExists(
+            @PathVariable String userId) {
+
+        boolean exists =
+                customerProfileService
+                        .getCustomerProfileByUserId(userId)
+                        .isPresent();
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Check completed",
+                        exists
+                )
+        );
+    }
+}

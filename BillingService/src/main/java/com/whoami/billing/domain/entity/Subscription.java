@@ -25,7 +25,7 @@ public class Subscription {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private String id;
 
     @Column(name = "customer_id", nullable = false)
     private String customerId;

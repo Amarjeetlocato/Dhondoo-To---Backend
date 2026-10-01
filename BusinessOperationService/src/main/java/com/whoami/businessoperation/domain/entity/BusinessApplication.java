@@ -15,9 +15,18 @@ import lombok.*;
 @Table(
         name = "business_applications",
         indexes = {
-                @Index(name = "idx_business_application_business_id", columnList = "business_id"),
-                @Index(name = "idx_business_application_owner_id", columnList = "owner_user_id"),
-                @Index(name = "idx_business_application_status", columnList = "application_status")
+                @Index(
+                        name = "idx_business_application_business_id",
+                        columnList = "business_id"
+                ),
+                @Index(
+                        name = "idx_business_application_owner_id",
+                        columnList = "owner_user_id"
+                ),
+                @Index(
+                        name = "idx_business_application_status",
+                        columnList = "application_status"
+                )
         }
 )
 @Getter
@@ -27,21 +36,62 @@ import lombok.*;
 @AllArgsConstructor
 public class BusinessApplication {
 
+    /*
+     * Internal database primary key.
+     */
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(name = "business_id", nullable = false, unique = true)
-    private UUID businessId;
+    /*
+     * Public application identity.
+     * Example: APPLICATION_A7K92M4X
+     */
+    @Column(
+            name = "application_id",
+            unique = true,
+            nullable = false,
+            updatable = false,
+            length = 40
+    )
+    private String applicationId;
 
-    @Column(name = "owner_user_id", nullable = false)
-    private UUID ownerUserId;
+    /*
+     * Public Business identity.
+     * Example: BUSINESS_A7K92M4X
+     */
+    @Column(
+            name = "business_id",
+            nullable = false,
+            unique = true,
+            length = 40
+    )
+    private String businessId;
+
+    /*
+     * User Registry public identity.
+     * Example: USER_A7K92M4X
+     */
+    @Column(
+            name = "owner_user_id",
+            nullable = false,
+            length = 40
+    )
+    private String ownerUserId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "business_type", nullable = false, length = 50)
+    @Column(
+            name = "business_type",
+            nullable = false,
+            length = 50
+    )
     private BusinessType businessType;
 
-    @Column(name = "business_name", nullable = false, length = 150)
+    @Column(
+            name = "business_name",
+            nullable = false,
+            length = 150
+    )
     private String businessName;
 
     @Column(length = 1000)
@@ -63,13 +113,21 @@ public class BusinessApplication {
     private BigDecimal longitude;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "application_status", nullable = false, length = 50)
+    @Column(
+            name = "application_status",
+            nullable = false,
+            length = 50
+    )
     @Builder.Default
     private BusinessApplicationStatus applicationStatus =
             BusinessApplicationStatus.DRAFT;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "operational_status", nullable = false, length = 30)
+    @Column(
+            name = "operational_status",
+            nullable = false,
+            length = 30
+    )
     @Builder.Default
     private BusinessOperationalStatus operationalStatus =
             BusinessOperationalStatus.CREATED;
@@ -90,7 +148,17 @@ public class BusinessApplication {
 
     @PrePersist
     protected void onCreate() {
+
         LocalDateTime now = LocalDateTime.now();
+
+        if (applicationId == null) {
+            applicationId = "APPLICATION_" +
+                    UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            .substring(0, 12)
+                            .toUpperCase();
+        }
 
         if (createdAt == null) {
             createdAt = now;
@@ -98,10 +166,6 @@ public class BusinessApplication {
 
         if (updatedAt == null) {
             updatedAt = now;
-        }
-
-        if (businessId == null) {
-            businessId = UUID.randomUUID();
         }
     }
 

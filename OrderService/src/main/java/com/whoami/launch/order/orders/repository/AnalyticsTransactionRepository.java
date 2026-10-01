@@ -1,18 +1,18 @@
 package com.whoami.launch.order.orders.repository;
 
+import com.whoami.launch.order.orders.entity.AnalyticsTransaction;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.whoami.launch.order.orders.entity.AnalyticsTransaction;
-
+@Repository
 public interface AnalyticsTransactionRepository
         extends JpaRepository<AnalyticsTransaction, Long> {
 
-    List<AnalyticsTransaction> findByShopIdAndSoldAtBetween(
-            String shopId,
+    List<AnalyticsTransaction> findByBusinessIdAndSoldAtBetween(
+            String businessId,
             LocalDateTime start,
-            LocalDateTime end
-    );
+            LocalDateTime end);
 }

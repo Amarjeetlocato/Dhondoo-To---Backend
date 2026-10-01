@@ -1,7 +1,10 @@
 package com.whoami.billing.service.impl;
 
-import com.locato.dto.billing.event.PaymentCompletedEvent;
-import com.locato.dto.billing.event.PaymentFailedEvent;
+import com.locato.constants.events.EventSources;
+import com.locato.constants.events.EventVersions;
+import com.locato.constants.events.billing.BillingEventType;
+import com.locato.constants.events.billing.PaymentCompletedEvent;
+import com.locato.constants.events.billing.PaymentFailedEvent;
 import com.whoami.billing.domain.entity.BillingTransactionStatus;
 import com.whoami.billing.domain.entity.Payment;
 import com.whoami.billing.domain.entity.PaymentStatus;
@@ -197,9 +200,11 @@ public class PaymentServiceImpl implements PaymentService {
         PaymentCompletedEvent event =
                 PaymentCompletedEvent.builder()
                         .eventId(UUID.randomUUID())
-                        .eventType("PAYMENT_COMPLETED")
-                        .timestamp(LocalDateTime.now())
-                        .source("BillingService")
+                        .eventType(BillingEventType.BILLING_CREATED)
+                        .eventVersion(EventVersions.V1)
+                        .source(EventSources.BILLING_SERVICE)
+                        .occurredAt(LocalDateTime.now())
+                        .correlationId(null)
                         .transactionId(
                                 saved.getTransactionId().toString()
                         )
@@ -278,9 +283,11 @@ public class PaymentServiceImpl implements PaymentService {
         PaymentFailedEvent event =
                 PaymentFailedEvent.builder()
                         .eventId(UUID.randomUUID())
-                        .eventType("PAYMENT_FAILED")
-                        .timestamp(LocalDateTime.now())
-                        .source("BillingService")
+                        .eventType(BillingEventType.PAYMENT_FAILED)
+                        .eventVersion(EventVersions.V1)
+                        .source(EventSources.BILLING_SERVICE)
+                        .occurredAt(LocalDateTime.now())
+                        .correlationId(null)
                         .transactionId(
                                 saved.getTransactionId().toString()
                         )

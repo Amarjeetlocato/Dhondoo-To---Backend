@@ -1,15 +1,14 @@
 package com.whoami.launch.consumer;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-import com.locato.topics.KafkaTopics;
-import com.locato.dto.ProductCreatedEvent;
-import com.locato.dto.ProductUpdatedEvent;
-import com.locato.dto.ProductDeletedEvent;
+
+import com.locato.constants.events.product.ProductCreatedEvent;
+import com.locato.constants.events.product.ProductDeletedEvent;
+import com.locato.constants.events.product.ProductUpdatedEvent;
+import com.locato.constants.topics.KafkaTopics;
 import com.whoami.launch.service.NotificationService;
-
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-
 
 import lombok.RequiredArgsConstructor;
 

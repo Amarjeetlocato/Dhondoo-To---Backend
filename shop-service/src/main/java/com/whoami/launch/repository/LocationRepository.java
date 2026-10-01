@@ -6,14 +6,20 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
-public interface LocationRepository extends JpaRepository<Location, String> {
-    Optional<Location> findByUserId(String userId);
+public interface LocationRepository
+        extends JpaRepository<Location, Long> {
+
     List<Location> findByUserIdOrderByTimestampDesc(String userId);
-    List<Location> findByTimestampBetween(LocalDateTime startTime, LocalDateTime endTime);
-    List<Location> findByLatitudeAndLongitude(Double latitude, Double longitude);
+
+    List<Location> findByTimestampBetween(
+            LocalDateTime startTime,
+            LocalDateTime endTime);
+
+    List<Location> findByLatitudeAndLongitude(
+            Double latitude,
+            Double longitude);
+
     boolean existsByUserId(String userId);
-    
 }

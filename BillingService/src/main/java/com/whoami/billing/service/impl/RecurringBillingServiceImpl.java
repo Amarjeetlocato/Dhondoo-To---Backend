@@ -1,10 +1,22 @@
 package com.whoami.billing.service.impl;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.locato.dto.billing.event.BillingCreatedEvent;
-import com.locato.dto.billing.event.RecurringPaymentRequestedEvent;
-import com.locato.topics.BillingTopics;
+import com.locato.constants.events.EventSources;
+import com.locato.constants.events.EventVersions;
+import com.locato.constants.events.billing.BillingCreatedEvent;
+import com.locato.constants.events.billing.BillingEventType;
+import com.locato.constants.events.billing.RecurringPaymentRequestedEvent;
+import com.locato.constants.topics.KafkaTopics;
 import com.whoami.billing.domain.entity.BillingPlan;
 import com.whoami.billing.domain.entity.BillingTransaction;
 import com.whoami.billing.domain.entity.BillingTransactionStatus;
@@ -16,16 +28,9 @@ import com.whoami.billing.repository.BillingTransactionRepository;
 import com.whoami.billing.repository.OutboxEventRepository;
 import com.whoami.billing.repository.SubscriptionRepository;
 import com.whoami.billing.service.RecurringBillingService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -176,9 +181,11 @@ public class RecurringBillingServiceImpl
         BillingCreatedEvent billingCreatedEvent =
                 BillingCreatedEvent.builder()
                         .eventId(UUID.randomUUID())
-                        .eventType("BILLING_CREATED")
-                        .timestamp(LocalDateTime.now())
-                        .source("BillingService")
+                        .eventType(BillingEventType.RECURRING_PAYMENT_REQUESTED)
+                        .eventVersion(EventVersions.V1)
+                        .source(EventSources.BILLING_SERVICE)
+                        .occurredAt(LocalDateTime.now())
+                        .correlationId(null)
                         .transactionId(saved.getTransactionId())
                         .customerId(saved.getCustomerId())
                         .referenceType(saved.getReferenceType())
@@ -198,10 +205,12 @@ public class RecurringBillingServiceImpl
         RecurringPaymentRequestedEvent paymentRequestedEvent =
                 RecurringPaymentRequestedEvent.builder()
                         .eventId(UUID.randomUUID())
-                        .eventType("RECURRING_PAYMENT_REQUESTED")
-                        .timestamp(LocalDateTime.now())
-                        .source("BillingService")
-                        .subscriptionId(subscription.getId())
+                        .eventType(BillingEventType.RECURRING_PAYMENT_REQUESTED)
+                        .eventVersion(EventVersions.V1)
+                        .source(EventSources.BILLING_SERVICE)
+                        .occurredAt(LocalDateTime.now())
+                        .correlationId(null)
+                        .subscriptionId(subscription.getId().toString())
                         .transactionId(saved.getTransactionId())
                         .customerId(saved.getCustomerId())
                         .amount(saved.getAmount())
@@ -230,7 +239,7 @@ public class RecurringBillingServiceImpl
                             )
                             .eventType("BILLING_CREATED")
                             .topic(
-                                    BillingTopics.BILLING_CREATED
+                                    KafkaTopics.BILLING_EVENTS
                             )
                             .payload(billingCreatedPayload)
                             .build();
@@ -260,7 +269,7 @@ public class RecurringBillingServiceImpl
                                     "RECURRING_PAYMENT_REQUESTED"
                             )
                             .topic(
-                                    BillingTopics.RECURRING_PAYMENT_REQUESTED
+                                    KafkaTopics.BILLING_EVENTS
                             )
                             .payload(paymentRequestedPayload)
                             .build();

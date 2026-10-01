@@ -10,29 +10,44 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, String> {
-	List<Product> findByProductName(String productName);
+public interface ProductRepository
+        extends JpaRepository<Product, Long> {
 
-	List<Product> findByProductNameContaining(String productName);
+    List<Product> findByProductName(String productName);
 
-	List<Product> findByShopId(String shopId);
+    List<Product> findByProductNameContaining(String productName);
 
-	List<Product> findByVisibility(ProductVisibility visibility);
+    List<Product> findByBusinessId(String businessId);
 
-	List<Product> findByBadges(String badges);
+    List<Product> findByVisibility(ProductVisibility visibility);
 
-	List<Product> findByQuality(String quality);
+    List<Product> findByBadges(String badges);
 
-	@Query("SELECT p FROM Product p WHERE p.shopId IN "
-			+ "(SELECT s.shopId FROM Shop s WHERE s.latitude IS NOT NULL AND s.longitude IS NOT NULL)")
-	List<Product> findAllFromShopsWithCoordinates();
+    List<Product> findByQuality(String quality);
 
-	long countByShopId(String string);
+    @Query("""
+            SELECT p
+            FROM Product p
+            WHERE p.businessId IN
+            (
+                SELECT b.businessId
+                FROM Business b
+                WHERE b.latitude IS NOT NULL
+                AND b.longitude IS NOT NULL
+            )
+            """)
+    List<Product> findAllWithBusinessCoordinates();
 
-	List<Product> findByStockStatus(StockStatus stockStatus);
-	
-	Page<Product> findByShopId(String shopId, Pageable pageable);
+    long countByBusinessId(String businessId);
 
+    List<Product> findByStockStatus(StockStatus stockStatus);
+
+    Page<Product> findByBusinessId(
+            String businessId,
+            Pageable pageable);
+
+    Optional<Product> findByProductId(String productId);
 }

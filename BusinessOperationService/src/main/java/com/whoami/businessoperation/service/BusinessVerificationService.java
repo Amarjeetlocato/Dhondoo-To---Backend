@@ -5,17 +5,16 @@ import com.whoami.businessoperation.dto.request.SubmitVerificationRequest;
 import com.whoami.businessoperation.dto.response.BusinessVerificationResponse;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface BusinessVerificationService {
 
     BusinessVerificationResponse createVerification(
-            UUID businessId,
-            UUID applicationId
+            String businessId,
+            String applicationId
     );
 
     BusinessVerificationResponse getVerification(
-            UUID businessId
+            String businessId
     );
 
     BusinessVerificationResponse submitVerification(
@@ -27,6 +26,6 @@ public interface BusinessVerificationService {
     );
 
     List<?> getVerificationHistory(
-            UUID businessId
+            String businessId
     );
 }

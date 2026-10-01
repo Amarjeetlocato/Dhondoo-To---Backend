@@ -2,13 +2,10 @@ package com.whoami.businessoperation.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.locato.constants.events.BusinessEvent;
-import com.locato.constants.events.BusinessEventType;
 import com.whoami.businessoperation.domain.entity.BusinessVerification;
 import com.whoami.businessoperation.domain.entity.BusinessVerificationHistory;
 import com.whoami.businessoperation.domain.enums.AuditAction;
@@ -17,7 +14,6 @@ import com.whoami.businessoperation.domain.enums.VerificationStatus;
 import com.whoami.businessoperation.dto.request.ReviewVerificationRequest;
 import com.whoami.businessoperation.dto.request.SubmitVerificationRequest;
 import com.whoami.businessoperation.dto.response.BusinessVerificationResponse;
-import com.whoami.businessoperation.kafka.BusinessEventProducer;
 import com.whoami.businessoperation.repository.BusinessVerificationHistoryRepository;
 import com.whoami.businessoperation.repository.BusinessVerificationRepository;
 import com.whoami.businessoperation.service.BusinessAuditService;
@@ -34,12 +30,11 @@ public class BusinessVerificationServiceImpl
     private final BusinessVerificationRepository verificationRepository;
     private final BusinessVerificationHistoryRepository historyRepository;
     private final BusinessAuditService businessAuditService;
-    private final BusinessEventProducer businessEventProducer;
 
     @Override
     public BusinessVerificationResponse createVerification(
-            UUID businessId,
-            UUID applicationId) {
+            String businessId,
+            String applicationId) {
 
         if (verificationRepository.existsByBusinessId(businessId)) {
             throw new IllegalStateException(
@@ -82,22 +77,13 @@ public class BusinessVerificationServiceImpl
                 null
         );
 
-        publishEvent(
-                BusinessEventType.VERIFICATION_STARTED,
-                saved,
-                null,
-                "SYSTEM",
-                "Business verification process created",
-                null
-        );
-
         return mapToResponse(saved);
     }
 
     @Override
     @Transactional(readOnly = true)
     public BusinessVerificationResponse getVerification(
-            UUID businessId) {
+            String businessId) {
 
         BusinessVerification verification =
                 getVerificationEntity(businessId);
@@ -110,13 +96,16 @@ public class BusinessVerificationServiceImpl
             SubmitVerificationRequest request) {
 
         BusinessVerification verification =
-                getVerificationEntity(request.getBusinessId());
+                getVerificationEntity(
+                        request.getBusinessId()
+                );
 
         VerificationStatus previousStatus =
                 verification.getVerificationStatus();
 
         if (previousStatus != VerificationStatus.PENDING
-                && previousStatus != VerificationStatus.REUPLOAD_REQUIRED) {
+                && previousStatus
+                != VerificationStatus.REUPLOAD_REQUIRED) {
 
             throw new IllegalStateException(
                     "Verification cannot be submitted in current status: "
@@ -132,7 +121,9 @@ public class BusinessVerificationServiceImpl
                 request.getVerificationVideoPublicId()
         );
 
-        verification.setSubmittedAt(LocalDateTime.now());
+        verification.setSubmittedAt(
+                LocalDateTime.now()
+        );
 
         verification.setVerificationStatus(
                 VerificationStatus.PENDING
@@ -162,15 +153,6 @@ public class BusinessVerificationServiceImpl
                 null
         );
 
-        publishEvent(
-                BusinessEventType.VERIFICATION_SUBMITTED,
-                saved,
-                null,
-                "BUSINESS_OWNER",
-                "Business verification submitted",
-                null
-        );
-
         return mapToResponse(saved);
     }
 
@@ -179,7 +161,9 @@ public class BusinessVerificationServiceImpl
             ReviewVerificationRequest request) {
 
         BusinessVerification verification =
-                getVerificationEntity(request.getBusinessId());
+                getVerificationEntity(
+                        request.getBusinessId()
+                );
 
         VerificationStatus previousStatus =
                 verification.getVerificationStatus();
@@ -197,27 +181,39 @@ public class BusinessVerificationServiceImpl
                 request.getVerificationStatus();
 
         verification.setVerificationStatus(newStatus);
+
         verification.setReviewerComment(
                 request.getReviewerComment()
         );
+
         verification.setReviewedBy(
                 request.getReviewedBy()
         );
+
         verification.setReviewedAt(
                 LocalDateTime.now()
         );
 
         if (newStatus == VerificationStatus.APPROVED) {
-            verification.setApprovedAt(LocalDateTime.now());
+
+            verification.setApprovedAt(
+                    LocalDateTime.now()
+            );
+
             verification.setRejectedAt(null);
         }
 
         if (newStatus == VerificationStatus.REJECTED) {
-            verification.setRejectedAt(LocalDateTime.now());
+
+            verification.setRejectedAt(
+                    LocalDateTime.now()
+            );
+
             verification.setApprovedAt(null);
         }
 
         if (newStatus == VerificationStatus.REUPLOAD_REQUIRED) {
+
             verification.setApprovedAt(null);
             verification.setRejectedAt(null);
         }
@@ -252,21 +248,11 @@ public class BusinessVerificationServiceImpl
                 null
         );
 
-        BusinessEventType eventType =
-                resolveEventType(newStatus);
-
-        if (eventType != null) {
-
-            publishEvent(
-                    eventType,
-                    saved,
-                    request.getReviewedBy(),
-                    "ADMIN",
-                    "Business verification status updated to "
-                            + newStatus,
-                    request.getReviewerComment()
-            );
-        }
+        /*
+         * Kafka verification events will be connected here
+         * after the finalized Verification event contracts
+         * are confirmed.
+         */
 
         return mapToResponse(saved);
     }
@@ -274,16 +260,19 @@ public class BusinessVerificationServiceImpl
     @Override
     @Transactional(readOnly = true)
     public List<?> getVerificationHistory(
-            UUID businessId) {
+            String businessId) {
 
         return historyRepository
-                .findByBusinessIdOrderByCreatedAtDesc(businessId);
+                .findByBusinessIdOrderByCreatedAtDesc(
+                        businessId
+                );
     }
 
     private BusinessVerification getVerificationEntity(
-            UUID businessId) {
+            String businessId) {
 
-        return verificationRepository.findByBusinessId(businessId)
+        return verificationRepository
+                .findByBusinessId(businessId)
                 .orElseThrow(() ->
                         new IllegalArgumentException(
                                 "Business verification not found for businessId: "
@@ -294,7 +283,7 @@ public class BusinessVerificationServiceImpl
     private void saveHistory(
             BusinessVerification verification,
             VerificationAction action,
-            UUID performedBy,
+            String performedBy,
             VerificationStatus previousStatus,
             VerificationStatus newStatus,
             String comment,
@@ -312,13 +301,23 @@ public class BusinessVerificationServiceImpl
         );
 
         history.setVerificationId(
-                verification.getId()
+                verification.getVerificationId()
         );
 
         history.setAction(action);
-        history.setPreviousStatus(previousStatus);
-        history.setNewStatus(newStatus);
-        history.setPerformedBy(performedBy);
+
+        history.setPreviousStatus(
+                previousStatus
+        );
+
+        history.setNewStatus(
+                newStatus
+        );
+
+        history.setPerformedBy(
+                performedBy
+        );
+
         history.setComment(
                 comment != null
                         ? comment
@@ -372,98 +371,72 @@ public class BusinessVerificationServiceImpl
         };
     }
 
-    private BusinessEventType resolveEventType(
-            VerificationStatus status) {
-
-        return switch (status) {
-
-            case APPROVED ->
-                    BusinessEventType.VERIFICATION_APPROVED;
-
-            case REJECTED ->
-                    BusinessEventType.VERIFICATION_REJECTED;
-
-            case REUPLOAD_REQUIRED ->
-                    BusinessEventType.VERIFICATION_REUPLOAD_REQUIRED;
-
-            default ->
-                    null;
-        };
-    }
-
-    private void publishEvent(
-            BusinessEventType eventType,
-            BusinessVerification verification,
-            UUID performedBy,
-            String performedByRole,
-            String description,
-            String reason) {
-
-        BusinessEvent event =
-                BusinessEvent.builder()
-                        .eventId(UUID.randomUUID())
-                        .eventType(eventType)
-                        .businessId(
-                                verification.getBusinessId()
-                        )
-                        .applicationId(
-                                verification.getApplicationId()
-                        )
-                        .performedBy(performedBy)
-                        .performedByRole(performedByRole)
-                        .description(description)
-                        .reason(reason)
-                        .occurredAt(LocalDateTime.now())
-                        .build();
-
-        businessEventProducer.publishVerificationEvent(event);
-    }
-
     private BusinessVerificationResponse mapToResponse(
             BusinessVerification verification) {
 
         BusinessVerificationResponse response =
                 new BusinessVerificationResponse();
 
-        response.setId(verification.getId());
-        response.setBusinessId(verification.getBusinessId());
-        response.setApplicationId(verification.getApplicationId());
+        response.setVerificationId(
+                verification.getVerificationId()
+        );
+
+        response.setBusinessId(
+                verification.getBusinessId()
+        );
+
+        response.setApplicationId(
+                verification.getApplicationId()
+        );
+
         response.setVerificationStatus(
                 verification.getVerificationStatus()
         );
+
         response.setVerificationVideoUrl(
                 verification.getVerificationVideoUrl()
         );
+
         response.setVerificationVideoPublicId(
                 verification.getVerificationVideoPublicId()
         );
+
         response.setReviewerComment(
                 verification.getReviewerComment()
         );
+
         response.setReviewedBy(
                 verification.getReviewedBy()
         );
+
         response.setStartedAt(
                 verification.getStartedAt()
         );
+
         response.setSubmittedAt(
                 verification.getSubmittedAt()
         );
+
         response.setReviewedAt(
                 verification.getReviewedAt()
         );
+
         response.setApprovedAt(
                 verification.getApprovedAt()
         );
+
         response.setRejectedAt(
                 verification.getRejectedAt()
         );
+
         response.setExpiresAt(
                 verification.getExpiresAt()
         );
+
         response.setCreatedAt(
                 verification.getCreatedAt()
         );
+
         response.setUpdatedAt(
                 verification.getUpdatedAt()
         );
