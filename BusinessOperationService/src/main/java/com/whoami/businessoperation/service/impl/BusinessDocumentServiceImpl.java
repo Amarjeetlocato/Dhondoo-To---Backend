@@ -11,6 +11,7 @@ import com.whoami.businessoperation.domain.enums.AuditAction;
 import com.whoami.businessoperation.domain.enums.DocumentStatus;
 import com.whoami.businessoperation.dto.request.UploadBusinessDocumentRequest;
 import com.whoami.businessoperation.dto.response.BusinessDocumentResponse;
+import com.whoami.businessoperation.kafka.BusinessEventProducer;
 import com.whoami.businessoperation.repository.BusinessDocumentRepository;
 import com.whoami.businessoperation.service.BusinessAuditService;
 import com.whoami.businessoperation.service.BusinessDocumentService;
@@ -25,6 +26,7 @@ public class BusinessDocumentServiceImpl
 
     private final BusinessDocumentRepository businessDocumentRepository;
     private final BusinessAuditService businessAuditService;
+    private final BusinessEventProducer businessEventProducer;
 
     @Override
     public BusinessDocumentResponse uploadDocument(
@@ -83,6 +85,12 @@ public class BusinessDocumentServiceImpl
                 null
         );
 
+        businessEventProducer.publishDocumentUploadedEvent(
+                saved,
+                null,
+                "Business document uploaded"
+        );
+
         return mapToResponse(saved);
     }
 
@@ -137,6 +145,24 @@ public class BusinessDocumentServiceImpl
             description =
                     "Business document approved";
 
+            businessAuditService.log(
+                    saved.getBusinessId(),
+                    saved.getApplicationId(),
+                    auditAction,
+                    reviewedBy,
+                    "ADMIN",
+                    description,
+                    null,
+                    null
+            );
+
+            businessEventProducer.publishDocumentApprovedEvent(
+                    saved,
+                    reviewedBy,
+                    "ADMIN",
+                    description
+            );
+
         } else if (status == DocumentStatus.REJECTED) {
 
             auditAction =
@@ -144,6 +170,29 @@ public class BusinessDocumentServiceImpl
 
             description =
                     "Business document rejected";
+
+            String reason =
+                    rejectionReason != null
+                            ? rejectionReason
+                            : description;
+
+            businessAuditService.log(
+                    saved.getBusinessId(),
+                    saved.getApplicationId(),
+                    auditAction,
+                    reviewedBy,
+                    "ADMIN",
+                    reason,
+                    null,
+                    null
+            );
+
+            businessEventProducer.publishDocumentRejectedEvent(
+                    saved,
+                    reviewedBy,
+                    "ADMIN",
+                    reason
+            );
 
         } else if (status == DocumentStatus.REUPLOAD_REQUIRED) {
 
@@ -153,6 +202,30 @@ public class BusinessDocumentServiceImpl
             description =
                     "Business document reupload required";
 
+            String reason =
+                    rejectionReason != null
+                            ? rejectionReason
+                            : description;
+
+            businessAuditService.log(
+                    saved.getBusinessId(),
+                    saved.getApplicationId(),
+                    auditAction,
+                    reviewedBy,
+                    "ADMIN",
+                    reason,
+                    null,
+                    null
+            );
+
+            businessEventProducer
+                    .publishDocumentReuploadRequiredEvent(
+                            saved,
+                            reviewedBy,
+                            "ADMIN",
+                            reason
+                    );
+
         } else {
 
             auditAction =
@@ -160,23 +233,18 @@ public class BusinessDocumentServiceImpl
 
             description =
                     "Document status updated to " + status;
+
+            businessAuditService.log(
+                    saved.getBusinessId(),
+                    saved.getApplicationId(),
+                    auditAction,
+                    reviewedBy,
+                    "ADMIN",
+                    description,
+                    null,
+                    null
+            );
         }
-
-        String finalDescription =
-                rejectionReason != null
-                        ? rejectionReason
-                        : description;
-
-        businessAuditService.log(
-                saved.getBusinessId(),
-                saved.getApplicationId(),
-                auditAction,
-                reviewedBy,
-                "ADMIN",
-                finalDescription,
-                null,
-                null
-        );
 
         return mapToResponse(saved);
     }

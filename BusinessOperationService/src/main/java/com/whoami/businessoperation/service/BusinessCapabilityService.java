@@ -1,11 +1,10 @@
 package com.whoami.businessoperation.service;
 
+import java.util.List;
+
 import com.whoami.businessoperation.domain.enums.CapabilityType;
 import com.whoami.businessoperation.dto.request.UpdateBusinessCapabilityRequest;
 import com.whoami.businessoperation.dto.response.BusinessCapabilityResponse;
-
-import java.util.List;
-import java.util.UUID;
 
 public interface BusinessCapabilityService {
 
@@ -22,11 +21,11 @@ public interface BusinessCapabilityService {
     );
 
     BusinessCapabilityResponse getCapability(
-    		String businessId,
+            String businessId,
             CapabilityType capabilityType
     );
 
     List<BusinessCapabilityResponse> getBusinessCapabilities(
-    		String businessId
+            String businessId
     );
 }

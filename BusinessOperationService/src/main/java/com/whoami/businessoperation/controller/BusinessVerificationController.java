@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.whoami.businessoperation.domain.entity.BusinessVerificationHistory;
 import com.whoami.businessoperation.dto.request.ReviewVerificationRequest;
 import com.whoami.businessoperation.dto.request.SubmitVerificationRequest;
 import com.whoami.businessoperation.dto.response.BusinessVerificationResponse;
@@ -72,7 +73,7 @@ public class BusinessVerificationController {
     }
 
     @GetMapping("/{businessId}/history")
-    public ResponseEntity<List<?>> getVerificationHistory(
+    public ResponseEntity<List<BusinessVerificationHistory>> getVerificationHistory(
             @PathVariable String businessId) {
 
         return ResponseEntity.ok(

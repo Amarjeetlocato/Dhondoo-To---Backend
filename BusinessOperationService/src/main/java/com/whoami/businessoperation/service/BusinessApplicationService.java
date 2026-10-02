@@ -40,4 +40,10 @@ public interface BusinessApplicationService {
             String businessId,
             String performedBy
     );
+    
+    BusinessApplicationResponse requestApplicationReupload(
+            String businessId,
+            String reason,
+            String performedBy
+    );
 }

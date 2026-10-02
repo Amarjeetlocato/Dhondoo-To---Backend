@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.locato.constants.events.EventSources;
+import com.locato.constants.events.EventVersions;
 import com.locato.constants.events.businessoperation.ApplicationCreatedEvent;
 import com.locato.constants.events.businessoperation.BusinessOperationEventType;
 import com.whoami.businessoperation.domain.entity.BusinessApplication;
@@ -50,45 +52,16 @@ public class BusinessApplicationServiceImpl
         BusinessApplication application =
                 new BusinessApplication();
 
-        application.setBusinessId(
-                request.getBusinessId()
-        );
-
-        application.setOwnerUserId(
-                request.getOwnerUserId()
-        );
-
-        application.setBusinessType(
-                request.getBusinessType()
-        );
-
-        application.setBusinessName(
-                request.getBusinessName()
-        );
-
-        application.setDescription(
-                request.getDescription()
-        );
-
-        application.setPhone(
-                request.getPhone()
-        );
-
-        application.setEmail(
-                request.getEmail()
-        );
-
-        application.setAddress(
-                request.getAddress()
-        );
-
-        application.setLatitude(
-                request.getLatitude()
-        );
-
-        application.setLongitude(
-                request.getLongitude()
-        );
+        application.setBusinessId(request.getBusinessId());
+        application.setOwnerUserId(request.getOwnerUserId());
+        application.setBusinessType(request.getBusinessType());
+        application.setBusinessName(request.getBusinessName());
+        application.setDescription(request.getDescription());
+        application.setPhone(request.getPhone());
+        application.setEmail(request.getEmail());
+        application.setAddress(request.getAddress());
+        application.setLatitude(request.getLatitude());
+        application.setLongitude(request.getLongitude());
 
         application.setApplicationStatus(
                 BusinessApplicationStatus.DRAFT
@@ -160,51 +133,35 @@ public class BusinessApplicationServiceImpl
         }
 
         if (request.getBusinessType() != null) {
-            application.setBusinessType(
-                    request.getBusinessType()
-            );
+            application.setBusinessType(request.getBusinessType());
         }
 
         if (request.getBusinessName() != null) {
-            application.setBusinessName(
-                    request.getBusinessName()
-            );
+            application.setBusinessName(request.getBusinessName());
         }
 
         if (request.getDescription() != null) {
-            application.setDescription(
-                    request.getDescription()
-            );
+            application.setDescription(request.getDescription());
         }
 
         if (request.getPhone() != null) {
-            application.setPhone(
-                    request.getPhone()
-            );
+            application.setPhone(request.getPhone());
         }
 
         if (request.getEmail() != null) {
-            application.setEmail(
-                    request.getEmail()
-            );
+            application.setEmail(request.getEmail());
         }
 
         if (request.getAddress() != null) {
-            application.setAddress(
-                    request.getAddress()
-            );
+            application.setAddress(request.getAddress());
         }
 
         if (request.getLatitude() != null) {
-            application.setLatitude(
-                    request.getLatitude()
-            );
+            application.setLatitude(request.getLatitude());
         }
 
         if (request.getLongitude() != null) {
-            application.setLongitude(
-                    request.getLongitude()
-            );
+            application.setLongitude(request.getLongitude());
         }
 
         BusinessApplication saved =
@@ -339,12 +296,45 @@ public class BusinessApplicationServiceImpl
          * Idempotency guard.
          *
          * If the same VERIFICATION_APPROVED event is received again,
-         * the application must not be approved and activated again.
+         * the application is already approved and activated.
+         * Do not create duplicate audit/events.
          */
         if (application.getApplicationStatus()
                 == BusinessApplicationStatus.APPROVED) {
 
             return mapToResponse(application);
+        }
+
+        /*
+         * Approval is allowed only after the application has reached
+         * a valid verification/review stage.
+         */
+        switch (application.getApplicationStatus()) {
+
+            case SUBMITTED:
+            case PAYMENT_PENDING:
+            case UNDER_REVIEW:
+            case DOCUMENT_VERIFICATION:
+            case VIDEO_VERIFICATION:
+            case VERIFICATION_PENDING:
+            case REUPLOAD_REQUIRED:
+                break;
+
+            case DRAFT:
+            case REJECTED:
+            case CANCELLED:
+
+                throw new IllegalStateException(
+                        "Application cannot be approved in current status: "
+                                + application.getApplicationStatus()
+                );
+
+            default:
+
+                throw new IllegalStateException(
+                        "Application cannot be approved in current status: "
+                                + application.getApplicationStatus()
+                );
         }
 
         application.setApplicationStatus(
@@ -405,6 +395,48 @@ public class BusinessApplicationServiceImpl
         return mapToResponse(saved);
     }
 
+    
+    @Override
+    public BusinessApplicationResponse requestApplicationReupload(
+            String businessId,
+            String reason,
+            String performedBy) {
+
+        BusinessApplication application =
+                getApplicationEntity(businessId);
+
+        if (application.getApplicationStatus()
+                == BusinessApplicationStatus.APPROVED) {
+
+            throw new IllegalStateException(
+                    "Approved application cannot be sent for reupload: "
+                            + businessId
+            );
+        }
+
+        application.setApplicationStatus(
+                BusinessApplicationStatus.REUPLOAD_REQUIRED
+        );
+
+        BusinessApplication saved =
+                businessApplicationRepository.save(application);
+
+        businessAuditService.log(
+                saved.getBusinessId(),
+                saved.getApplicationId(),
+                AuditAction.REUPLOAD_REQUESTED,
+                performedBy,
+                "ADMIN",
+                reason != null
+                        ? reason
+                        : "Business application reupload required",
+                null,
+                null
+        );
+
+        return mapToResponse(saved);
+    }
+    
     private void publishApplicationCreatedEvent(
             BusinessApplication application) {
 
@@ -414,19 +446,13 @@ public class BusinessApplicationServiceImpl
                         .eventType(
                                 BusinessOperationEventType.APPLICATION_CREATED
                         )
-                        .eventVersion(1)
-                        .source("business-operation-service")
+                        .eventVersion(EventVersions.V1)
+                        .source(EventSources.BUSINESS_OPERATION_SERVICE)
                         .occurredAt(LocalDateTime.now())
                         .correlationId(null)
-                        .businessId(
-                                application.getBusinessId()
-                        )
-                        .applicationId(
-                                application.getApplicationId()
-                        )
-                        .userId(
-                                application.getOwnerUserId()
-                        )
+                        .businessId(application.getBusinessId())
+                        .applicationId(application.getApplicationId())
+                        .userId(application.getOwnerUserId())
                         .description(
                                 "Business application created"
                         )

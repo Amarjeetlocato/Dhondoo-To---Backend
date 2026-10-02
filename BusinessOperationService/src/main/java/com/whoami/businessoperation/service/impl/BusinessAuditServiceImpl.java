@@ -1,7 +1,6 @@
 package com.whoami.businessoperation.service.impl;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +47,7 @@ public class BusinessAuditServiceImpl implements BusinessAuditService {
     @Override
     @Transactional(readOnly = true)
     public List<BusinessAuditLog> getBusinessAuditLogs(
-    		String businessId) {
+            String businessId) {
 
         return businessAuditLogRepository
                 .findByBusinessIdOrderByCreatedAtDesc(businessId);
@@ -57,9 +56,10 @@ public class BusinessAuditServiceImpl implements BusinessAuditService {
     @Override
     @Transactional(readOnly = true)
     public List<BusinessAuditLog> getApplicationAuditLogs(
-    		String applicationId) {
+            String applicationId) {
 
         return businessAuditLogRepository
                 .findByApplicationIdOrderByCreatedAtDesc(applicationId);
     }
 }
+

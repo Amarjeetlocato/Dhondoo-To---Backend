@@ -83,15 +83,20 @@ public class BusinessCapabilityServiceImpl
                 AuditAction.CAPABILITY_ENABLED,
                 request.getPerformedBy(),
                 "ADMIN",
-                request.getReason(),
+                request.getReason() != null
+                ? request.getReason()
+                : "Business capability enabled",
                 null,
                 null
         );
-
-        /*
-         * Kafka capability event will be wired after the finalized
-         * Capability event contract is confirmed.
-         */
+        businessEventProducer.publishCapabilityEnabledEvent(
+                saved,
+                request.getPerformedBy(),
+                "ADMIN",
+                request.getReason() != null
+                        ? request.getReason()
+                        : "Business capability enabled"
+        );
 
         return mapToResponse(saved);
     }
@@ -131,11 +136,14 @@ public class BusinessCapabilityServiceImpl
                 null
         );
 
-        /*
-         * Kafka capability event will be wired after the finalized
-         * Capability event contract is confirmed.
-         */
-
+        businessEventProducer.publishCapabilityDisabledEvent(
+                saved,
+                request.getPerformedBy(),
+                "ADMIN",
+                request.getReason() != null
+                        ? request.getReason()
+                        : "Business capability disabled"
+        );
         return mapToResponse(saved);
     }
 
@@ -169,16 +177,21 @@ public class BusinessCapabilityServiceImpl
                 AuditAction.SYSTEM_ACTION,
                 request.getPerformedBy(),
                 "ADMIN",
-                "Business capability suspended: "
-                        + request.getReason(),
+                request.getReason() != null
+                ? request.getReason()
+                : "Business capability suspended",
                 null,
                 null
         );
 
-        /*
-         * Kafka capability event will be wired after the finalized
-         * Capability event contract is confirmed.
-         */
+        businessEventProducer.publishCapabilitySuspendedEvent(
+                saved,
+                request.getPerformedBy(),
+                "ADMIN",
+                request.getReason() != null
+                        ? request.getReason()
+                        : "Business capability suspended"
+        );
 
         return mapToResponse(saved);
     }

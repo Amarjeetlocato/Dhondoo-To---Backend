@@ -7,29 +7,34 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface BusinessDocumentRepository
         extends JpaRepository<BusinessDocument, Long> {
 
-    List<BusinessDocument> findByBusinessId(String businessId);
+    List<BusinessDocument> findByBusinessId(
+            String businessId
+    );
 
-    List<BusinessDocument> findByApplicationId(String applicationId);
+    List<BusinessDocument> findByApplicationId(
+            String applicationId
+    );
 
     List<BusinessDocument> findByBusinessIdAndDocumentStatus(
-    		String businessId,
+            String businessId,
             DocumentStatus documentStatus
     );
 
     Optional<BusinessDocument> findByBusinessIdAndDocumentType(
-    		String businessId,
+            String businessId,
             DocumentType documentType
     );
 
     boolean existsByBusinessIdAndDocumentType(
-    		String businessId,
+            String businessId,
             DocumentType documentType
     );
 
-	Optional<BusinessDocument> findByDocumentId(String documentId);
+    Optional<BusinessDocument> findByDocumentId(
+            String documentId
+    );
 }

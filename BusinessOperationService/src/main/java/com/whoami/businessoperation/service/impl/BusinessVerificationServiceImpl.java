@@ -14,6 +14,7 @@ import com.whoami.businessoperation.domain.enums.VerificationStatus;
 import com.whoami.businessoperation.dto.request.ReviewVerificationRequest;
 import com.whoami.businessoperation.dto.request.SubmitVerificationRequest;
 import com.whoami.businessoperation.dto.response.BusinessVerificationResponse;
+import com.whoami.businessoperation.kafka.BusinessEventProducer;
 import com.whoami.businessoperation.repository.BusinessVerificationHistoryRepository;
 import com.whoami.businessoperation.repository.BusinessVerificationRepository;
 import com.whoami.businessoperation.service.BusinessAuditService;
@@ -30,6 +31,7 @@ public class BusinessVerificationServiceImpl
     private final BusinessVerificationRepository verificationRepository;
     private final BusinessVerificationHistoryRepository historyRepository;
     private final BusinessAuditService businessAuditService;
+    private final BusinessEventProducer businessEventProducer;
 
     @Override
     public BusinessVerificationResponse createVerification(
@@ -37,6 +39,7 @@ public class BusinessVerificationServiceImpl
             String applicationId) {
 
         if (verificationRepository.existsByBusinessId(businessId)) {
+
             throw new IllegalStateException(
                     "Verification already exists for businessId: "
                             + businessId
@@ -67,14 +70,21 @@ public class BusinessVerificationServiceImpl
         );
 
         businessAuditService.log(
-                businessId,
-                applicationId,
+                saved.getBusinessId(),
+                saved.getApplicationId(),
                 AuditAction.VERIFICATION_STARTED,
                 null,
                 "SYSTEM",
                 "Business verification process created",
                 null,
                 null
+        );
+
+        businessEventProducer.publishVerificationStartedEvent(
+                saved,
+                null,
+                "SYSTEM",
+                "Business verification process created"
         );
 
         return mapToResponse(saved);
@@ -151,6 +161,13 @@ public class BusinessVerificationServiceImpl
                 "Business verification submitted",
                 null,
                 null
+        );
+
+        businessEventProducer.publishVerificationSubmittedEvent(
+                saved,
+                null,
+                "BUSINESS_OWNER",
+                "Business verification submitted"
         );
 
         return mapToResponse(saved);
@@ -237,29 +254,58 @@ public class BusinessVerificationServiceImpl
         AuditAction auditAction =
                 resolveAuditAction(newStatus);
 
+        String reviewerComment =
+                request.getReviewerComment() != null
+                        ? request.getReviewerComment()
+                        : "Verification status updated";
+
         businessAuditService.log(
                 saved.getBusinessId(),
                 saved.getApplicationId(),
                 auditAction,
                 request.getReviewedBy(),
                 "ADMIN",
-                request.getReviewerComment(),
+                reviewerComment,
                 null,
                 null
         );
 
-        /*
-         * Kafka verification events will be connected here
-         * after the finalized Verification event contracts
-         * are confirmed.
-         */
+        if (newStatus == VerificationStatus.APPROVED) {
+
+            businessEventProducer.publishVerificationApprovedEvent(
+                    saved,
+                    request.getReviewedBy(),
+                    "ADMIN",
+                    "Business verification approved"
+            );
+
+        } else if (newStatus == VerificationStatus.REJECTED) {
+
+            businessEventProducer.publishVerificationRejectedEvent(
+                    saved,
+                    request.getReviewedBy(),
+                    "ADMIN",
+                    reviewerComment
+            );
+
+        } else if (newStatus
+                == VerificationStatus.REUPLOAD_REQUIRED) {
+
+            businessEventProducer
+                    .publishVerificationReuploadRequiredEvent(
+                            saved,
+                            request.getReviewedBy(),
+                            "ADMIN",
+                            reviewerComment
+                    );
+        }
 
         return mapToResponse(saved);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<?> getVerificationHistory(
+    public List<BusinessVerificationHistory> getVerificationHistory(
             String businessId) {
 
         return historyRepository

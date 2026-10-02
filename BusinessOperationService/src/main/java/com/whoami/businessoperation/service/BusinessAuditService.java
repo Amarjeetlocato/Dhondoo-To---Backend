@@ -1,16 +1,15 @@
 package com.whoami.businessoperation.service;
 
-import com.whoami.businessoperation.domain.enums.AuditAction;
-import com.whoami.businessoperation.domain.entity.BusinessAuditLog;
-
 import java.util.List;
-import java.util.UUID;
+
+import com.whoami.businessoperation.domain.entity.BusinessAuditLog;
+import com.whoami.businessoperation.domain.enums.AuditAction;
 
 public interface BusinessAuditService {
 
     void log(
-    		String businessId,
-    		String applicationId,
+            String businessId,
+            String applicationId,
             AuditAction action,
             String performedBy,
             String performedByRole,
@@ -20,10 +19,11 @@ public interface BusinessAuditService {
     );
 
     List<BusinessAuditLog> getBusinessAuditLogs(
-    		String businessId
+            String businessId
     );
 
     List<BusinessAuditLog> getApplicationAuditLogs(
-    		String applicationId
+            String applicationId
     );
 }
+

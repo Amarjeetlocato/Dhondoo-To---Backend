@@ -1,5 +1,6 @@
 package com.whoami.businessoperation.service;
 
+import com.whoami.businessoperation.domain.entity.BusinessVerificationHistory;
 import com.whoami.businessoperation.dto.request.ReviewVerificationRequest;
 import com.whoami.businessoperation.dto.request.SubmitVerificationRequest;
 import com.whoami.businessoperation.dto.response.BusinessVerificationResponse;
@@ -25,7 +26,7 @@ public interface BusinessVerificationService {
             ReviewVerificationRequest request
     );
 
-    List<?> getVerificationHistory(
+    List<BusinessVerificationHistory> getVerificationHistory(
             String businessId
     );
 }

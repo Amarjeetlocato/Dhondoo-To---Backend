@@ -109,4 +109,20 @@ public class BusinessApplicationController {
                 )
         );
     }
+    
+    @PostMapping("/{businessId}/reupload")
+    public ResponseEntity<BusinessApplicationResponse>
+    requestApplicationReupload(
+            @PathVariable String businessId,
+            @RequestParam String performedBy,
+            @RequestParam(required = false) String reason) {
+
+        return ResponseEntity.ok(
+                businessApplicationService.requestApplicationReupload(
+                        businessId,
+                        reason,
+                        performedBy
+                )
+        );
+    }
 }
