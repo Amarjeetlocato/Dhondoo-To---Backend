@@ -27,7 +27,22 @@ public class OtpServiceImpl implements OtpService {
     private EmailService emailService;
 
     @Override
-    public String generateAndSendOtp(String email, String otp) {
+    public String generateAndSendOtp(
+            String email,
+            String otp) {
+
+        emailService.sendVerificationOtpEmail(
+                email,
+                otp
+        );
+
+        return otp;
+    }
+
+    @Override
+    public String generateAndSendResetOtp(
+            String email,
+            String otp) {
 
         emailService.sendForgotPasswordEmail(
                 email,

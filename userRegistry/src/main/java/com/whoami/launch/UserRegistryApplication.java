@@ -7,7 +7,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @EnableDiscoveryClient
 @SpringBootApplication
-@EnableFeignClients
 public class UserRegistryApplication {
 
 	public static void main(String[] args) {

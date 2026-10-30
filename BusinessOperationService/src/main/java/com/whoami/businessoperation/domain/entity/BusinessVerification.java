@@ -61,21 +61,21 @@ public class BusinessVerification {
             unique = true,
             nullable = false,
             updatable = false,
-            length = 40
+            length = 100
     )
     private String verificationId;
 
     @Column(
             name = "business_id",
             nullable = false,
-            length = 40
+            length = 100
     )
     private String businessId;
 
     @Column(
             name = "application_id",
             nullable = false,
-            length = 40
+            length = 100
     )
     private String applicationId;
 
@@ -83,11 +83,11 @@ public class BusinessVerification {
     @Column(
             name = "verification_status",
             nullable = false,
-            length = 40
+            length = 100
     )
     @Builder.Default
     private VerificationStatus verificationStatus =
-            VerificationStatus.NOT_STARTED;
+            VerificationStatus.VERIFICATION_STARTED;
 
     @Column(
             name = "verification_video_url",
@@ -95,11 +95,20 @@ public class BusinessVerification {
     )
     private String verificationVideoUrl;
 
-    @Column(
-            name = "verification_video_public_id",
-            length = 500
-    )
+    @Column(name = "verification_video_public_id", length = 500)
     private String verificationVideoPublicId;
+
+    @Column(name = "recording_latitude")
+    private Double recordingLatitude;
+
+    @Column(name = "recording_longitude")
+    private Double recordingLongitude;
+
+    @Column(name = "location_verified")
+    private Boolean locationVerified;
+
+    @Column(name = "distance_meters")
+    private Double distanceMeters;
 
     @Column(length = 1000)
     private String reviewerComment;
@@ -125,6 +134,7 @@ public class BusinessVerification {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    
     @PrePersist
     protected void onCreate() {
 
@@ -140,6 +150,10 @@ public class BusinessVerification {
                                     .toUpperCase();
         }
 
+        if (startedAt == null) {
+            startedAt = now;
+        }
+
         if (createdAt == null) {
             createdAt = now;
         }
@@ -148,7 +162,7 @@ public class BusinessVerification {
             updatedAt = now;
         }
     }
-
+    
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();

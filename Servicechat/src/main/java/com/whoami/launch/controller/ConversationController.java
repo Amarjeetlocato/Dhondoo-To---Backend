@@ -25,6 +25,10 @@ public class ConversationController {
     public ResponseEntity<List<ConversationDTO>> listConversations(
             Principal principal) {
 
+        if (principal == null) {
+            return ResponseEntity.ok(List.of());
+        }
+
         String userId = principal.getName();
 
         List<Conversation> conversations =
@@ -34,7 +38,7 @@ public class ConversationController {
                 conversations.stream()
                         .map(c -> new ConversationDTO(
                                 c.getConversationId(),
-                                c.getParticipants(),
+                                c.getParticipants() != null ? c.getParticipants() : List.of(),
                                 c.getLastMessage(),
                                 c.getLastMessageTimestamp()))
                         .collect(Collectors.toList());
@@ -55,7 +59,7 @@ public class ConversationController {
                     List<ChatMessageDTO> messages =
                             c.getMessages().stream()
                                     .map(m -> new ChatMessageDTO(
-                                    		 m.getMessageId(),
+                                             m.getMessageId(),
                                              m.getSenderId(),
                                              m.getReceiverId(),
                                              m.getContent(),
@@ -76,7 +80,7 @@ public class ConversationController {
 
                     return new ConversationWithMessagesDTO(
                             c.getConversationId(),
-                            c.getParticipants(),
+                            c.getParticipants() != null ? c.getParticipants() : List.of(),
                             c.getLastMessage(),
                             c.getLastMessageTimestamp(),
                             messages
@@ -99,7 +103,7 @@ public class ConversationController {
                 conversations.stream()
                         .map(c -> new ConversationDTO(
                                 c.getConversationId(),
-                                c.getParticipants(),
+                                c.getParticipants() != null ? c.getParticipants() : List.of(),
                                 c.getLastMessage(),
                                 c.getLastMessageTimestamp()))
                         .collect(Collectors.toList());
@@ -112,16 +116,25 @@ public class ConversationController {
     getUserConversations(
             @PathVariable String userId) {
 
-        List<Conversation> conversations =
-                conversationRepository.findBySenderIdOrReceiverId(
-                        userId,
-                        userId);
+        List<Conversation> conversations;
+        try {
+            conversations = conversationRepository.findBySenderIdOrReceiverId(userId, userId);
+            if (conversations == null || conversations.isEmpty()) {
+                conversations = conversationRepository.findByParticipantsContaining(userId);
+            }
+        } catch (Exception e) {
+            conversations = conversationRepository.findByParticipantsContaining(userId);
+        }
+
+        if (conversations == null) {
+            conversations = List.of();
+        }
 
         List<ConversationDTO> dtos =
                 conversations.stream()
                         .map(c -> new ConversationDTO(
                                 c.getConversationId(),
-                                c.getParticipants(),
+                                c.getParticipants() != null ? c.getParticipants() : List.of(),
                                 c.getLastMessage(),
                                 c.getLastMessageTimestamp()))
                         .collect(Collectors.toList());

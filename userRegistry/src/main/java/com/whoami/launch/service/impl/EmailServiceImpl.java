@@ -1,5 +1,9 @@
 package com.whoami.launch.service.impl;
 
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -107,7 +111,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendPasswordChangedEmail(
+    public void sendProfileUpdatedEmail(
             String email,
             String fullName) {
 
@@ -120,16 +124,41 @@ public class EmailServiceImpl implements EmailService {
 
         String html =
                 templateEngine.process(
-                        "emails/password-changed",
+                        "emails/profile-updated",
                         context
                 );
 
         sendHtmlEmail(
                 email,
-                "Password Changed Successfully",
+                "Profile Updated Successfully",
                 html
         );
     }
+   
+    @Override
+    public void sendVerificationOtpEmail(
+            String email,
+            String otp) {
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("name", email);
+        variables.put("otp", otp);
+
+        String htmlContent =
+                templateEngine.process(
+                        "emails/verify-otp",
+                        new Context(Locale.getDefault(), variables)
+                );
+System.out.println("IIIIIIIIIII");
+        sendHtmlEmail(
+                email,
+                "Verify Your Email - OTP",
+                htmlContent
+        );
+        
+        System.out.println("IIIIIIIIIII");
+    }
+   
 
     @Override
     public void sendPasswordUpdatedEmail(

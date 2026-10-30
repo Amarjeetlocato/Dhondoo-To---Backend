@@ -3,6 +3,8 @@ package com.whoami.launch.entity;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.whoami.launch.enums.ProductVisibility;
 import com.whoami.launch.enums.StockStatus;
 
@@ -53,19 +55,22 @@ public class Product {
      * Business to which this product belongs.
      * Example: BUSINESS_A7K92M4X
      */
+    @JsonProperty("businessId")
+    @JsonAlias({"shopId", "businessId"})
     @Column(
             nullable = false,
             length = 30
     )
     private String businessId;
 
+    @JsonProperty("productName")
+    @JsonAlias({"name", "productName", "title"})
     @Column(
             nullable = false,
             length = 150
     )
     private String productName;
     
-
     @ElementCollection
     @CollectionTable(
             name = "product_images",
@@ -74,10 +79,16 @@ public class Product {
     @Column(name = "image_url")
     private List<String> productImages;
 
+    @JsonProperty("productDescription")
+    @JsonAlias({"description", "productDescription"})
     @Column(columnDefinition = "TEXT")
     private String productDescription;
 
+    @JsonProperty("productPrice")
+    @JsonAlias({"price", "productPrice"})
     private Double productPrice;
+
+    private Integer quantity;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -33,9 +33,11 @@ import com.whoami.businessoperation.domain.entity.BusinessDocument;
 import com.whoami.businessoperation.domain.entity.BusinessVerification;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class BusinessEventProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
@@ -685,10 +687,20 @@ public class BusinessEventProducer {
             String businessId,
             Object event) {
 
-        kafkaTemplate.send(
-                KafkaTopics.BUSINESS_OPERATION_EVENTS,
-                businessId,
-                event
-        );
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                kafkaTemplate.send(
+                        KafkaTopics.BUSINESS_OPERATION_EVENTS,
+                        businessId,
+                        event
+                ).whenComplete((result, exception) -> {
+                    if (exception != null) {
+                        log.error("Failed to publish Kafka event for businessId={}: {}", businessId, exception.getMessage());
+                    }
+                });
+            } catch (Exception e) {
+                log.error("Error sending Kafka event for businessId={}: {}", businessId, e.getMessage());
+            }
+        });
     }
 }

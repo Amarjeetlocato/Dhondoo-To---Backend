@@ -85,7 +85,16 @@ public class User {
     private String otp;
 
     private LocalDateTime otpExpiry;
+    /**
+     * Number of failed registration OTP attempts.
+     */
+    @Column(nullable = false)
+    private int otpAttempts = 0;
 
+    /**
+     * Temporary block time after too many invalid OTP attempts.
+     */
+    private LocalDateTime otpBlockedUntil;
     /**
      * Login account lock status.
      */

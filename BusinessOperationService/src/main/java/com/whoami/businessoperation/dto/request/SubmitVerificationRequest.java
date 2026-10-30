@@ -1,7 +1,11 @@
 package com.whoami.businessoperation.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -21,4 +25,8 @@ public class SubmitVerificationRequest {
 
     @NotBlank(message = "Verification video public ID is required")
     private String verificationVideoPublicId;
+
+    private Double latitude;
+
+    private Double longitude;
 }

@@ -11,7 +11,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "device_tokens", indexes = {
         @Index(name = "idx_device_user_id", columnList = "user_id"),
-        @Index(name = "idx_device_token", columnList = "device_token", unique = true),
         @Index(name = "idx_device_is_active", columnList = "is_active")
 })
 @Data
@@ -20,17 +19,17 @@ import java.util.UUID;
 @Builder
 public class DeviceToken {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(nullable = false, unique = true, updatable = false, length = 40)
-	private String deviceTokenId;
+    @Column(nullable = false, unique = true, updatable = false, length = 50)
+    private String deviceTokenId;
 
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 50)
     private String userId;
 
-    @Column(nullable = false, columnDefinition = "TEXT", unique = true)
+    @Column(nullable = false, length = 500)
     private String deviceToken;
 
     @Column(length = 50)

@@ -25,6 +25,8 @@ public class PaymentResponse {
 
     private String gatewayPaymentId;
 
+    private String gatewaySignature;
+
     private BigDecimal amount;
 
     private String currency;
@@ -32,6 +34,8 @@ public class PaymentResponse {
     private PaymentStatus status;
 
     private String paymentMethod;
+
+    private String failureReason;
 
     private LocalDateTime paidAt;
 

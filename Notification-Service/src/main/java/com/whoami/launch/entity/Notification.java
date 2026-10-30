@@ -28,10 +28,10 @@ public class Notification {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, unique = true, updatable = false, length = 40)
+	@Column(nullable = false, unique = true, updatable = false, length = 100)
 	private String notificationId;
 	
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 100)
     private String userId;
 
     @Column(nullable = false, length = 255)
@@ -43,10 +43,10 @@ public class Notification {
     @Column(columnDefinition = "LONGTEXT")
     private String imageUrl;
 
-    @Column(length = 50)
+    @Column(length = 100)
     private String targetId;
 
-    @Column(length = 50)
+    @Column(length = 100)
     private String targetType;
 
     @Enumerated(EnumType.STRING)

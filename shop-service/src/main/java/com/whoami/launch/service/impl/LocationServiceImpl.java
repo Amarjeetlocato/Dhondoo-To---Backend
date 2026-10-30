@@ -21,6 +21,8 @@ public class LocationServiceImpl
 
     private final LocationRepository locationRepository;
 
+    // ================= CREATE =================
+
     @Override
     public Location createLocation(
             Location location) {
@@ -32,51 +34,80 @@ public class LocationServiceImpl
         return locationRepository.save(location);
     }
 
+    // ================= UPDATE =================
+
     @Override
     public Location updateLocation(
             String locationId,
             Location locationDetails) {
 
-        /*
-         * locationId is the public LOCATION_... ID.
-         *
-         * Current repository uses Long as the internal JPA ID
-         * and does not yet expose findByLocationId().
-         *
-         * Therefore this lookup must be completed at the
-         * repository layer before using this method.
-         */
-        throw new UnsupportedOperationException(
-                "Location lookup by locationId requires "
-                        + "findByLocationId(String) in LocationRepository"
+        Location existingLocation =
+                locationRepository.findByLocationId(locationId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Location not found: "
+                                                + locationId
+                                )
+                        );
+
+        if (locationDetails.getLatitude() != null) {
+
+            existingLocation.setLatitude(
+                    locationDetails.getLatitude()
+            );
+        }
+
+        if (locationDetails.getLongitude() != null) {
+
+            existingLocation.setLongitude(
+                    locationDetails.getLongitude()
+            );
+        }
+
+        existingLocation.setTimestamp(
+                LocalDateTime.now()
+        );
+
+        return locationRepository.save(
+                existingLocation
         );
     }
+
+    // ================= GET BY ID =================
 
     @Override
     public Optional<Location> getLocationById(
             String locationId) {
 
-        throw new UnsupportedOperationException(
-                "Location lookup by locationId requires "
-                        + "findByLocationId(String) in LocationRepository"
-        );
+        return locationRepository
+                .findByLocationId(locationId);
     }
+
+    // ================= GET BY USER =================
 
     @Override
     public List<Location> getLocationsByUserId(
             String userId) {
 
         return locationRepository
-                .findByUserIdOrderByTimestampDesc(userId);
+                .findByUserIdOrderByTimestampDesc(
+                        userId
+                );
     }
+
+    // ================= GET BY USER + TIME =================
 
     @Override
     public List<Location> getLocationsByUserIdOrderedByTime(
             String userId) {
 
         return locationRepository
-                .findByUserIdOrderByTimestampDesc(userId);
+                .findByUserIdOrderByTimestampDesc(
+                        userId
+                );
     }
+
+    // ================= GET BY TIME RANGE =================
 
     @Override
     public List<Location> getLocationsByTimeRange(
@@ -90,6 +121,8 @@ public class LocationServiceImpl
                 );
     }
 
+    // ================= GET BY COORDINATES =================
+
     @Override
     public List<Location> getLocationsByCoordinates(
             Double latitude,
@@ -102,21 +135,34 @@ public class LocationServiceImpl
                 );
     }
 
+    // ================= GET ALL =================
+
     @Override
     public List<Location> getAllLocations() {
 
         return locationRepository.findAll();
     }
 
+    // ================= DELETE =================
+
     @Override
     public void deleteLocation(
             String locationId) {
 
-        throw new UnsupportedOperationException(
-                "Location deletion by locationId requires "
-                        + "findByLocationId(String) in LocationRepository"
-        );
+        Location location =
+                locationRepository
+                        .findByLocationId(locationId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Location not found: "
+                                                + locationId
+                                )
+                        );
+
+        locationRepository.delete(location);
     }
+
+    // ================= RESPONSE DTO =================
 
     @Override
     public LocationResponseDTO toResponseDTO(
@@ -135,9 +181,24 @@ public class LocationServiceImpl
         );
     }
 
+    // ================= KAFKA =================
+
     @Override
     public void createLocationFromUser(
             LocationCreatedEvent event) {
+
+        if (event == null
+                || event.getUserId() == null
+                || event.getUserId().isBlank()) {
+
+            return;
+        }
+
+        if (locationRepository.existsByUserId(
+                event.getUserId())) {
+
+            return;
+        }
 
         Location location =
                 new Location();

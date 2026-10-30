@@ -253,34 +253,34 @@ services:
   # ==========================
   # SUPER USER
   # ==========================
-  # super-user:
-  #   build:
-  #     context: ..
-  #     dockerfile: Dockerfile
-  #     target: super-user
+  super-user:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: super-user
 
-  #   container_name: super-user
+    container_name: super-user
 
-  #   restart: unless-stopped
+    restart: unless-stopped
 
-  #   ports:
-  #     - "8088:8088"
+    ports:
+      - "8088:8088"
 
-  #   environment:
-  #     SERVER_PORT: 8088
-  #     DB_URL: jdbc:mysql://mysql:3306/superuser
-  #     DB_USERNAME: root
-  #     DB_PASSWORD: ${MYSQL_PASSWORD}
-  #     KAFKA_SERVER: kafka:9092
-  #     EUREKA_SERVER: http://eureka:8761/eureka/
+    environment:
+      SERVER_PORT: 8088
+      DB_URL: jdbc:mysql://mysql:3306/superuser
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      KAFKA_SERVER: kafka:9092
+      EUREKA_SERVER: http://eureka:8761/eureka/
 
-  #   depends_on:
-  #     - mysql
-  #     - kafka
-  #     - eureka
+    depends_on:
+      - mysql
+      - kafka
+      - eureka
 
-  #   networks:
-  #     - locato-network
+    networks:
+      - locato-network
 
 
   # ==========================
@@ -310,7 +310,7 @@ services:
       - service-chat
       - order-service
       - notification-service
-      # - super-user
+      - super-user
 
     networks:
       - locato-network

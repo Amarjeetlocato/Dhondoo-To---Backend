@@ -23,7 +23,8 @@ public interface PaymentGatewayClient {
 
     boolean verifyPayment(
             String gatewayOrderId,
-            String gatewayPaymentId
+            String gatewayPaymentId,
+            String gatewaySignature
     );
 
     void refundPayment(

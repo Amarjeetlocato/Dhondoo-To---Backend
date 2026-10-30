@@ -27,13 +27,15 @@ public class NearbyController {
 
     @GetMapping("/shops")
     public ResponseEntity<List<NearbyBusinessDTO>> getNearbyShops(
-            @RequestParam String userId,
+            @RequestParam Double latitude,
+            @RequestParam Double longitude,
             @RequestParam(defaultValue = "10") Double radiusKm,
             @RequestParam(defaultValue = "20") int limit) {
 
         return ResponseEntity.ok(
                 nearbyService.findNearbyBusiness(
-                        userId,
+                        latitude,
+                        longitude,
                         radiusKm,
                         limit
                 )
@@ -44,13 +46,15 @@ public class NearbyController {
 
     @GetMapping("/products")
     public ResponseEntity<List<NearbyProductDTO>> getNearbyProducts(
-            @RequestParam String userId,
+            @RequestParam Double latitude,
+            @RequestParam Double longitude,
             @RequestParam(defaultValue = "10") Double radiusKm,
             @RequestParam(defaultValue = "20") int limit) {
 
         return ResponseEntity.ok(
                 nearbyService.findNearbyProducts(
-                        userId,
+                        latitude,
+                        longitude,
                         radiusKm,
                         limit
                 )
@@ -61,13 +65,15 @@ public class NearbyController {
 
     @GetMapping("/services")
     public ResponseEntity<List<NearbyServiceDTO>> getNearbyServices(
-            @RequestParam String userId,
+            @RequestParam Double latitude,
+            @RequestParam Double longitude,
             @RequestParam(defaultValue = "10") Double radiusKm,
             @RequestParam(defaultValue = "20") int limit) {
 
         return ResponseEntity.ok(
                 nearbyService.findNearbyServices(
-                        userId,
+                        latitude,
+                        longitude,
                         radiusKm,
                         limit
                 )
@@ -78,13 +84,15 @@ public class NearbyController {
 
     @GetMapping("/reels")
     public ResponseEntity<List<NearbyReelDTO>> getNearbyReels(
-            @RequestParam String userId,
+            @RequestParam Double latitude,
+            @RequestParam Double longitude,
             @RequestParam(defaultValue = "10") Double radiusKm,
             @RequestParam(defaultValue = "20") int limit) {
 
         return ResponseEntity.ok(
                 nearbyService.findNearbyReels(
-                        userId,
+                        latitude,
+                        longitude,
                         radiusKm,
                         limit
                 )

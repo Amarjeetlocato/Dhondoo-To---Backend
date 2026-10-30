@@ -17,7 +17,8 @@ public interface PaymentService {
 
     PaymentResponse markPaymentSuccess(
             UUID paymentId,
-            String gatewayPaymentId
+            String gatewayPaymentId,
+            String gatewaySignature
     );
 
     PaymentResponse markPaymentFailed(

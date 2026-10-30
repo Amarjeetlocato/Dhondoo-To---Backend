@@ -114,7 +114,7 @@ public class ProductController {
 
     // ================= CREATE =================
 
-    @PostMapping
+    @PostMapping({"", "/create"})
     public ResponseEntity<Product> createProduct(
             @RequestBody Product product) {
 

@@ -134,9 +134,22 @@ public class Business {
 
     /**
      * Whether the business accepts orders.
+     *
+     * CLOSED or SUSPENDED businesses should not
+     * accept orders regardless of this value.
      */
     @Column(nullable = false)
     private Boolean acceptingOrders = true;
+
+    /**
+     * Whether products/services should be hidden
+     * from public discovery when the business is CLOSED.
+     *
+     * true  -> hide products/services/reels when CLOSED
+     * false -> keep them visible but disable ordering
+     */
+    @Column(nullable = false)
+    private Boolean hideProductsWhenClosed = false;
 
     /**
      * Whether orders are processed automatically.

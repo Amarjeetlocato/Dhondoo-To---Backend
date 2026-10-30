@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.config.SaslConfigs;
-import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,16 +14,27 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import com.locato.constants.events.customer.CustomerProfileCreatedEvent;
+import com.locato.constants.events.location.LocationCreatedEvent;
 
 @Configuration
 @EnableKafka
 public class KafkaConsumerConfig {
 
+    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
+    private static final String GROUP_ID = "shop-group";
+
+    // ============================================================
+    // CUSTOMER EVENT CONSUMER
+    // ============================================================
+
     @Bean
-    public ConsumerFactory<String, CustomerProfileCreatedEvent> consumerFactory() {
+    public ConsumerFactory<String, CustomerProfileCreatedEvent>
+    customerConsumerFactory() {
 
         JsonDeserializer<CustomerProfileCreatedEvent> deserializer =
-                new JsonDeserializer<>(CustomerProfileCreatedEvent.class);
+                new JsonDeserializer<>(
+                        CustomerProfileCreatedEvent.class
+                );
 
         deserializer.addTrustedPackages("*");
 
@@ -33,30 +42,13 @@ public class KafkaConsumerConfig {
 
         props.put(
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                System.getenv().getOrDefault("KAFKA_SERVERS", "kafka:9092")
+                BOOTSTRAP_SERVERS
         );
 
         props.put(
-                "security.protocol",
-                SecurityProtocol.SASL_PLAINTEXT.name()
+                ConsumerConfig.GROUP_ID_CONFIG,
+                GROUP_ID
         );
-
-        props.put(
-                SaslConfigs.SASL_MECHANISM,
-                "SCRAM-SHA-512"
-        );
-
-        String username = System.getenv("KAFKA_USERNAME");
-        String password = System.getenv("KAFKA_PASSWORD");
-
-        props.put(
-                SaslConfigs.SASL_JAAS_CONFIG,
-                "org.apache.kafka.common.security.scram.ScramLoginModule required "
-                        + "username=\"" + username + "\" "
-                        + "password=\"" + password + "\";"
-        );
-
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "shop-group");
 
         props.put(
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
@@ -75,14 +67,82 @@ public class KafkaConsumerConfig {
         );
     }
 
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, CustomerProfileCreatedEvent>
+    @Bean(name = "kafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<
+            String,
+            CustomerProfileCreatedEvent>
     kafkaListenerContainerFactory() {
 
-        ConcurrentKafkaListenerContainerFactory<String, CustomerProfileCreatedEvent> factory =
+        ConcurrentKafkaListenerContainerFactory<
+                String,
+                CustomerProfileCreatedEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
 
-        factory.setConsumerFactory(consumerFactory());
+        factory.setConsumerFactory(
+                customerConsumerFactory()
+        );
+
+        return factory;
+    }
+
+    // ============================================================
+    // LOCATION EVENT CONSUMER
+    // ============================================================
+
+    @Bean
+    public ConsumerFactory<String, LocationCreatedEvent>
+    locationConsumerFactory() {
+
+        JsonDeserializer<LocationCreatedEvent> deserializer =
+                new JsonDeserializer<>(
+                        LocationCreatedEvent.class
+                );
+
+        deserializer.addTrustedPackages("*");
+
+        Map<String, Object> props = new HashMap<>();
+
+        props.put(
+                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                BOOTSTRAP_SERVERS
+        );
+
+        props.put(
+                ConsumerConfig.GROUP_ID_CONFIG,
+                GROUP_ID
+        );
+
+        props.put(
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                StringDeserializer.class
+        );
+
+        props.put(
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                JsonDeserializer.class
+        );
+
+        return new DefaultKafkaConsumerFactory<>(
+                props,
+                new StringDeserializer(),
+                deserializer
+        );
+    }
+
+    @Bean(name = "locationKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<
+            String,
+            LocationCreatedEvent>
+    locationKafkaListenerContainerFactory() {
+
+        ConcurrentKafkaListenerContainerFactory<
+                String,
+                LocationCreatedEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+
+        factory.setConsumerFactory(
+                locationConsumerFactory()
+        );
 
         return factory;
     }

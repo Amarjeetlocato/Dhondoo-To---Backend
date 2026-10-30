@@ -5,47 +5,48 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.messaging.FirebaseMessaging;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
-import java.io.IOException;
+import java.io.InputStream;
 
-/**
- * Firebase configuration for Cloud Messaging
- * Only initialized if firebase-config.json is available on classpath
- */
 @Slf4j
 @Configuration
-@ConditionalOnResource(resources = "classpath:firebase-config.json")
 public class FirebaseConfig {
 
-    /**
-     * Initialize Firebase App
-     */
     @Bean
-    public FirebaseApp firebaseApp() throws IOException {
-        if (FirebaseApp.getApps().isEmpty()) {
-            log.info("Initializing Firebase app");
-
-            ClassPathResource resource = new ClassPathResource("firebase-config.json");
-            GoogleCredentials credentials = GoogleCredentials.fromStream(resource.getInputStream());
-
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(credentials)
-                    .build();
-
-            return FirebaseApp.initializeApp(options);
+    public FirebaseApp firebaseApp() {
+        if (!FirebaseApp.getApps().isEmpty()) {
+            return FirebaseApp.getInstance();
         }
-        return FirebaseApp.getInstance();
+
+        try {
+            ClassPathResource resource = new ClassPathResource("firebase-config.json");
+            if (resource.exists()) {
+                try (InputStream is = resource.getInputStream()) {
+                    GoogleCredentials credentials = GoogleCredentials.fromStream(is);
+                    FirebaseOptions options = FirebaseOptions.builder()
+                            .setCredentials(credentials)
+                            .build();
+
+                    log.info("Firebase App initialized successfully");
+                    return FirebaseApp.initializeApp(options);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Firebase App initialization failed/skipped: {}", e.getMessage());
+        }
+        return null;
     }
 
-    /**
-     * Firebase Messaging instance for sending messages
-     */
     @Bean
-    public FirebaseMessaging firebaseMessaging(FirebaseApp firebaseApp) throws IOException {
+    @ConditionalOnBean(FirebaseApp.class)
+    public FirebaseMessaging firebaseMessaging(FirebaseApp firebaseApp) {
+        if (firebaseApp == null) {
+            return null;
+        }
         return FirebaseMessaging.getInstance(firebaseApp);
     }
 }

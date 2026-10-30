@@ -26,6 +26,9 @@ public final class KafkaTopics {
     public static final String BUSINESS_EVENTS =
             "business-events";
 
+    public static final String SHOP_EVENTS =
+            "shop-events";
+
     public static final String PRODUCT_EVENTS =
             "product-events";
 
@@ -59,6 +62,9 @@ public final class KafkaTopics {
     public static final String NOTIFICATION_EVENTS =
             "notification-events";
 
+    public static final String NOTIFICATION_TOPIC =
+            "notification-topic";
+
 
     // =========================
     // BILLING DOMAIN
@@ -66,6 +72,9 @@ public final class KafkaTopics {
 
     public static final String BILLING_EVENTS =
             "billing-events";
+
+    public static final String PAYMENT_EVENTS =
+            "payment-events";
 
 
     // =========================

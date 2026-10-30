@@ -13,7 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class InternalApiKeyFilter
         extends OncePerRequestFilter {
 
-    @Value("${internal.api.key}")
+    @Value("${internal.api.key:WHOAMI_INTERNAL_2026}")
     private String configuredKey;
 
     @Override

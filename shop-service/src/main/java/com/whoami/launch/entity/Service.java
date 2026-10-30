@@ -2,6 +2,9 @@ package com.whoami.launch.entity;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,10 +29,13 @@ public class Service {
     )
     private String serviceId;
 
+    @JsonProperty("businessId")
+    @JsonAlias({"shopId", "businessId"})
     @Column(nullable = false, length = 30)
     private String businessId;
 
-    
+    @JsonProperty("serviceName")
+    @JsonAlias({"name", "serviceName", "title"})
     @Column(nullable = false)
     private String serviceName;
 
@@ -41,6 +47,8 @@ public class Service {
 
     private String videoPublicId;
 
+    @JsonProperty("serviceDescription")
+    @JsonAlias({"description", "serviceDescription"})
     @Column(columnDefinition = "TEXT")
     private String serviceDescription;
 

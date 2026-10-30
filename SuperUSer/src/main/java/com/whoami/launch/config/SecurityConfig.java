@@ -52,7 +52,7 @@ public class SecurityConfig {
                             "/admin/auth/refresh"
                     ).permitAll()
 
-                    .requestMatchers("/admin/**")
+                    .requestMatchers("/admin/**", "/api/admin/**")
                     .hasRole("ADMIN")
 
                     .anyRequest()

@@ -9,10 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.whoami.businessoperation.domain.entity.BusinessDocument;
 import com.whoami.businessoperation.domain.enums.AuditAction;
 import com.whoami.businessoperation.domain.enums.DocumentStatus;
+import com.whoami.businessoperation.domain.enums.VerificationStatus;
 import com.whoami.businessoperation.dto.request.UploadBusinessDocumentRequest;
+import com.whoami.businessoperation.dto.response.BusinessApplicationResponse;
 import com.whoami.businessoperation.dto.response.BusinessDocumentResponse;
 import com.whoami.businessoperation.kafka.BusinessEventProducer;
 import com.whoami.businessoperation.repository.BusinessDocumentRepository;
+import com.whoami.businessoperation.repository.BusinessVerificationRepository;
 import com.whoami.businessoperation.service.BusinessAuditService;
 import com.whoami.businessoperation.service.BusinessDocumentService;
 
@@ -25,9 +28,13 @@ public class BusinessDocumentServiceImpl
         implements BusinessDocumentService {
 
     private final BusinessDocumentRepository businessDocumentRepository;
+    private final BusinessVerificationRepository businessVerificationRepository;
     private final BusinessAuditService businessAuditService;
     private final BusinessEventProducer businessEventProducer;
 
+	/*
+	 * private final BusinessApplicationService businessApplicationService;
+	 */
     @Override
     public BusinessDocumentResponse uploadDocument(
             UploadBusinessDocumentRequest request) {
@@ -74,6 +81,15 @@ public class BusinessDocumentServiceImpl
         BusinessDocument saved =
                 businessDocumentRepository.save(document);
 
+        // Update verification status to DOCUMENT_UPLOADED if currently PAYMENT_COMPLETED
+        businessVerificationRepository.findByBusinessId(saved.getBusinessId()).ifPresent(v -> {
+            if (v.getVerificationStatus() == VerificationStatus.PAYMENT_COMPLETED ||
+                v.getVerificationStatus() == VerificationStatus.DOCUMENT_UPLOAD_REQUIRED) {
+                v.setVerificationStatus(VerificationStatus.DOCUMENT_UPLOADED);
+                businessVerificationRepository.save(v);
+            }
+        });
+
         businessAuditService.log(
                 saved.getBusinessId(),
                 saved.getApplicationId(),
@@ -84,7 +100,8 @@ public class BusinessDocumentServiceImpl
                 null,
                 null
         );
-
+        
+        
         businessEventProducer.publishDocumentUploadedEvent(
                 saved,
                 null,
@@ -145,6 +162,12 @@ public class BusinessDocumentServiceImpl
             description =
                     "Business document approved";
 
+            // Update verification status to DOCUMENT_APPROVED to unlock Step 3!
+            businessVerificationRepository.findByBusinessId(saved.getBusinessId()).ifPresent(v -> {
+                v.setVerificationStatus(VerificationStatus.DOCUMENT_APPROVED);
+                businessVerificationRepository.save(v);
+            });
+
             businessAuditService.log(
                     saved.getBusinessId(),
                     saved.getApplicationId(),
@@ -176,6 +199,12 @@ public class BusinessDocumentServiceImpl
                             ? rejectionReason
                             : description;
 
+            businessVerificationRepository.findByBusinessId(saved.getBusinessId()).ifPresent(v -> {
+                v.setVerificationStatus(VerificationStatus.REJECTED);
+                v.setReviewerComment(reason);
+                businessVerificationRepository.save(v);
+            });
+
             businessAuditService.log(
                     saved.getBusinessId(),
                     saved.getApplicationId(),
@@ -206,6 +235,12 @@ public class BusinessDocumentServiceImpl
                     rejectionReason != null
                             ? rejectionReason
                             : description;
+
+            businessVerificationRepository.findByBusinessId(saved.getBusinessId()).ifPresent(v -> {
+                v.setVerificationStatus(VerificationStatus.REUPLOAD_REQUIRED);
+                v.setReviewerComment(reason);
+                businessVerificationRepository.save(v);
+            });
 
             businessAuditService.log(
                     saved.getBusinessId(),
@@ -288,6 +323,7 @@ public class BusinessDocumentServiceImpl
                         ));
     }
 
+    
     private BusinessDocumentResponse mapToResponse(
             BusinessDocument document) {
 

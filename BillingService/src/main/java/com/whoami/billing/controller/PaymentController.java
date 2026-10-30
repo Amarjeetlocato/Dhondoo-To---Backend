@@ -50,16 +50,20 @@ public class PaymentController {
         );
     }
 
+    
     @PutMapping("/{paymentId}/success")
     public PaymentResponse markPaymentSuccess(
             @PathVariable UUID paymentId,
-            @RequestParam String gatewayPaymentId) {
+            @RequestParam String gatewayPaymentId,
+            @RequestParam String gatewaySignature) {
 
         return paymentService.markPaymentSuccess(
                 paymentId,
-                gatewayPaymentId
+                gatewayPaymentId,
+                gatewaySignature
         );
     }
+    
 
     @PutMapping("/{paymentId}/failed")
     public PaymentResponse markPaymentFailed(

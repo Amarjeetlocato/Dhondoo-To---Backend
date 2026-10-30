@@ -1,5 +1,6 @@
 package com.whoami.billing.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.whoami.billing.dto.request.CreateSubscriptionRequest;
@@ -10,6 +11,8 @@ public interface SubscriptionService {
     SubscriptionResponse create(CreateSubscriptionRequest request);
 
     SubscriptionResponse getById(UUID id);
+
+    List<SubscriptionResponse> getByCustomerId(String customerId);
 
     SubscriptionResponse getByGatewaySubscriptionId(
             String gatewaySubscriptionId

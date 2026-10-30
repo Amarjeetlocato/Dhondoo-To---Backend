@@ -92,11 +92,17 @@
 		</dependency>
 
 		<!-- Shared Module -->
-<dependency>
-    <groupId>com.locato</groupId>
-    <artifactId>locato-constants</artifactId>
-    <version>1.0.0</version>
-</dependency>
+		<dependency>
+			<groupId>com.locato</groupId>
+			<artifactId>locato-constants</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+		<!-- KAFKA -->
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
 
 <!-- JWT -->
 <dependency>

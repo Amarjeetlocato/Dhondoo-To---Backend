@@ -13,26 +13,29 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PaymentGatewayFactory {
 
-    private final List<PaymentGatewayClient> gatewayClients;
 
-    public PaymentGatewayClient getClient(
-            PaymentGateway gateway) {
+private final List<PaymentGatewayClient> gatewayClients;
 
-        Map<PaymentGateway, PaymentGatewayClient> clients =
-                gatewayClients.stream()
-                        .collect(Collectors.toMap(
-                                PaymentGatewayClient::getGateway,
-                                Function.identity()
-                        ));
+public PaymentGatewayClient getClient(
+        PaymentGateway gateway) {
 
-        PaymentGatewayClient client = clients.get(gateway);
+    Map<PaymentGateway, PaymentGatewayClient> clients =
+            gatewayClients.stream()
+                    .collect(Collectors.toMap(
+                            PaymentGatewayClient::getGateway,
+                            Function.identity()
+                    ));
 
-        if (client == null) {
-            throw new IllegalArgumentException(
-                    "Unsupported payment gateway: " + gateway
-            );
-        }
+    PaymentGatewayClient client = clients.get(gateway);
 
-        return client;
+    if (client == null) {
+        throw new IllegalArgumentException(
+                "Unsupported payment gateway: " + gateway
+        );
     }
+
+    return client;
+}
+
+
 }

@@ -1,6 +1,7 @@
 package com.whoami.launch.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +13,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.locato.constants.events.EventSources;
+import com.locato.constants.events.EventVersions;
+import com.locato.constants.events.customer.CustomerEventType;
 import com.locato.constants.events.customer.CustomerProfileCreatedEvent;
 import com.locato.constants.events.location.LocationCreatedEvent;
+import com.locato.constants.events.location.LocationEventType;
+import com.locato.constants.events.user.UserCreatedEvent;
+import com.locato.constants.events.user.UserEventType;
+import com.locato.constants.topics.KafkaTopics;
 import com.whoami.launch.dto.ApiResponse;
 import com.whoami.launch.dto.JwtResponse;
 import com.whoami.launch.dto.LoginRequest;
@@ -126,10 +134,37 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public String register(RegisterRequest request) {
 
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new UserAlreadyExistsException(
-                    "User already exists"
+        java.util.Optional<User> existingUserOpt = userRepository.findByEmail(request.getEmail());
+
+        if (existingUserOpt.isPresent()) {
+            User existingUser = existingUserOpt.get();
+            if (existingUser.isVerified()) {
+                throw new UserAlreadyExistsException(
+                        "User already exists with email: " + request.getEmail()
+                );
+            }
+
+            // Unverified user exists -> update details, reset OTP, and send fresh registration OTP
+            existingUser.setFullName(request.getFullName());
+            existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+
+            String otp = otpGenerator.generateOTP();
+            existingUser.setOtp(passwordEncoder.encode(otp));
+            existingUser.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
+            existingUser.setOtpAttempts(0);
+            existingUser.setOtpBlockedUntil(null);
+            existingUser.setVerified(false);
+
+            User savedUser = userRepository.save(existingUser);
+
+            otpService.generateAndSendOtp(request.getEmail(), otp);
+
+            logger.info(
+                    "Re-sent registration OTP for unverified user: {}",
+                    savedUser.getUserId()
             );
+
+            return "OTP sent successfully";
         }
 
         User user = new User();
@@ -155,7 +190,7 @@ public class AuthServiceImpl implements AuthService {
 
         user.setVerified(false);
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
         otpService.generateAndSendOtp(
                 request.getEmail(),
@@ -164,7 +199,7 @@ public class AuthServiceImpl implements AuthService {
 
         logger.info(
                 "Registration OTP generated for user: {}",
-                user.getEmail()
+                savedUser.getUserId()
         );
 
         return "OTP sent successfully";
@@ -182,9 +217,26 @@ public class AuthServiceImpl implements AuthService {
                                 "Invalid request"
                         ));
 
-        if (user.getOtpExpiry() == null ||
-                LocalDateTime.now()
-                        .isAfter(user.getOtpExpiry())) {
+        // Idempotent check: If account is already verified, return success immediately
+        if (user.isVerified()) {
+            return "Account verified successfully";
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // Check temporary OTP block
+        if (user.getOtpBlockedUntil() != null &&
+                now.isBefore(user.getOtpBlockedUntil())) {
+
+            throw new InvalidOtpException(
+                    "Too many invalid OTP attempts. Please try again later."
+            );
+        }
+
+        // Check OTP existence / expiry
+        if (user.getOtp() == null ||
+                user.getOtpExpiry() == null ||
+                now.isAfter(user.getOtpExpiry())) {
 
             throw new InvalidOtpException(
                     "OTP expired"
@@ -197,15 +249,48 @@ public class AuthServiceImpl implements AuthService {
                         user.getOtp()
                 );
 
+        // Invalid OTP
         if (!validOtp) {
+
+            int attempts = user.getOtpAttempts() + 1;
+            user.setOtpAttempts(attempts);
+
+            // Block after 5 failed attempts
+            if (attempts >= 5) {
+
+                user.setOtpBlockedUntil(
+                        now.plusMinutes(15)
+                );
+
+                // Invalidate current OTP
+                user.setOtp(null);
+                user.setOtpExpiry(null);
+
+                userRepository.save(user);
+
+                throw new InvalidOtpException(
+                        "Too many invalid OTP attempts. "
+                        + "Please request a new OTP after 15 minutes."
+                );
+            }
+
+            userRepository.save(user);
+
             throw new InvalidOtpException(
-                    "Invalid OTP"
+                    "Invalid OTP. Attempts remaining: "
+                            + (5 - attempts)
             );
         }
 
+        // Successful verification
         user.setVerified(true);
+
         user.setOtp(null);
         user.setOtpExpiry(null);
+
+        // Reset OTP security state
+        user.setOtpAttempts(0);
+        user.setOtpBlockedUntil(null);
 
         userRepository.save(user);
 
@@ -214,37 +299,93 @@ public class AuthServiceImpl implements AuthService {
                 user.getFullName()
         );
 
-        CustomerProfileCreatedEvent customerEvent =
-                new CustomerProfileCreatedEvent();
-
-        customerEvent.setUserId(
-                user.getUserId()
-        );
-        customerEvent.setFullName(
-                user.getFullName()
-        );
-        customerEvent.setEmail(
-                user.getEmail()
-        );
-
-        LocationCreatedEvent locationEvent =
-                new LocationCreatedEvent();
-
-        locationEvent.setUserId(
-                user.getUserId()
-        );
-
-        kafkaTemplate.send(
-                "location-created-topic",
-                locationEvent
-        );
-
-        kafkaTemplate.send(
-                "customer-created-topic",
-                customerEvent
-        );
+        // Publish user, customer profile, and location creation events ONLY AFTER OTP verification succeeds!
+        publishUserCreatedEvent(user);
+        publishCustomerProfileCreatedEvent(user);
+        publishLocationCreatedEvent(user);
 
         return "Account verified successfully";
+    }
+    private void publishUserCreatedEvent(User user) {
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                UserCreatedEvent event =
+                        UserCreatedEvent.builder()
+                                .eventId(UUID.randomUUID())
+                                .eventType(UserEventType.USER_CREATED)
+                                .eventVersion(EventVersions.V1)
+                                .source(EventSources.USER_REGISTRY)
+                                .occurredAt(LocalDateTime.now())
+                                .correlationId(null)
+                                .userId(user.getUserId())
+                                .fullName(user.getFullName())
+                                .email(user.getEmail())
+                                .build();
+
+                kafkaTemplate.send(
+                        KafkaTopics.USER_EVENTS,
+                        user.getUserId(),
+                        event
+                );
+            } catch (Exception e) {
+                logger.error("Failed to publish UserCreatedEvent for userId={}: {}", user.getUserId(), e.getMessage());
+            }
+        });
+    }
+
+    private void publishCustomerProfileCreatedEvent(User user) {
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                CustomerProfileCreatedEvent event =
+                        CustomerProfileCreatedEvent.builder()
+                                .eventId(UUID.randomUUID())
+                                .eventType(
+                                        CustomerEventType.CUSTOMER_PROFILE_CREATED
+                                )
+                                .eventVersion(EventVersions.V1)
+                                .source(EventSources.USER_REGISTRY)
+                                .occurredAt(LocalDateTime.now())
+                                .correlationId(null)
+                                .userId(user.getUserId())
+                                .customerId(null)
+                                .fullName(user.getFullName())
+                                .email(user.getEmail())
+                                .build();
+
+                kafkaTemplate.send(
+                        KafkaTopics.CUSTOMER_EVENTS,
+                        user.getUserId(),
+                        event
+                );
+            } catch (Exception e) {
+                logger.error("Failed to publish CustomerProfileCreatedEvent for userId={}: {}", user.getUserId(), e.getMessage());
+            }
+        });
+    }
+
+    private void publishLocationCreatedEvent(User user) {
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                LocationCreatedEvent event =
+                        LocationCreatedEvent.builder()
+                                .eventId(UUID.randomUUID())
+                                .eventType(LocationEventType.LOCATION_CREATED)
+                                .eventVersion(EventVersions.V1)
+                                .source(EventSources.USER_REGISTRY)
+                                .occurredAt(LocalDateTime.now())
+                                .correlationId(null)
+                                .userId(user.getUserId())
+                                .build();
+
+                kafkaTemplate.send(
+                        KafkaTopics.LOCATION_EVENTS,
+                        user.getUserId(),
+                        event
+                );
+            } catch (Exception e) {
+                logger.error("Failed to publish LocationCreatedEvent for userId={}: {}", user.getUserId(), e.getMessage());
+            }
+        });
     }
 
     private void doAuthenticate(
@@ -293,10 +434,18 @@ public class AuthServiceImpl implements AuthService {
         );
 
         user.setResetOtpVerified(false);
+        
+        
 
         userRepository.save(user);
+        
+        System.out.println(
+                "RESET OTP SAVED | email=" + email +
+                " | hash=" + user.getResetOtp() +
+                " | expiry=" + user.getResetOtpExpiry()
+        );
 
-        otpService.generateAndSendOtp(
+        otpService.generateAndSendResetOtp(
                 email,
                 otp
         );
@@ -324,8 +473,13 @@ public class AuthServiceImpl implements AuthService {
                     "OTP expired"
             );
         }
-
+        System.out.println(
+                "RESET OTP VERIFY | email=" + email +
+                " | expiry=" + user.getResetOtpExpiry() +
+                " | hash=" + user.getResetOtp()
+        );
         boolean validOtp =
+        		
                 passwordEncoder.matches(
                         otp,
                         user.getResetOtp()
@@ -338,17 +492,11 @@ public class AuthServiceImpl implements AuthService {
         }
 
         user.setResetOtpVerified(true);
-
         userRepository.save(user);
-
-        emailService.sendPasswordChangedEmail(
-                email,
-                user.getFullName()
-        );
 
         return "Reset OTP verified successfully";
     }
-
+    
     @Override
     public String updatePassword(
             String email,
@@ -491,3 +639,4 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 }
+

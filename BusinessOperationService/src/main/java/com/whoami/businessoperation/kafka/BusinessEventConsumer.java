@@ -2,17 +2,21 @@ package com.whoami.businessoperation.kafka;
 
 import com.locato.constants.events.business.BusinessCreatedEvent;
 import com.locato.constants.events.businessoperation.ApplicationCreatedEvent;
+import com.locato.constants.events.businessoperation.ApplicationCreationRequestedEvent;
 import com.locato.constants.events.businessoperation.ApplicationSubmittedEvent;
 import com.locato.constants.events.businessoperation.BusinessOperationEventType;
 import com.locato.constants.events.businessoperation.VerificationApprovedEvent;
 import com.locato.constants.events.businessoperation.VerificationRejectedEvent;
 import com.locato.constants.events.businessoperation.VerificationReuploadRequiredEvent;
 import com.locato.constants.topics.KafkaTopics;
+import com.whoami.businessoperation.domain.enums.BusinessType;
+import com.whoami.businessoperation.dto.request.CreateBusinessApplicationRequest;
 import com.whoami.businessoperation.service.BusinessApplicationService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
@@ -48,12 +52,70 @@ public class BusinessEventConsumer {
             groupId = "${spring.kafka.consumer.group-id}"
     )
     public void consumeBusinessOperationEvent(
-            Object event,
+            ConsumerRecord<String, Object> record,
             Acknowledgment acknowledgment) {
 
         try {
 
-            if (event instanceof ApplicationCreatedEvent applicationCreatedEvent) {
+            Object event = record.value();
+
+            if (event instanceof ApplicationCreationRequestedEvent requestEvent) {
+
+                log.info(
+                        "Received application creation request: eventId={}, businessId={}, userId={}",
+                        requestEvent.getEventId(),
+                        requestEvent.getBusinessId(),
+                        requestEvent.getUserId()
+                );
+
+                if (BusinessOperationEventType.APPLICATION_CREATION_REQUESTED
+                        .equals(requestEvent.getEventType())) {
+
+                    CreateBusinessApplicationRequest request =
+                            CreateBusinessApplicationRequest.builder()
+                                    .businessId(
+                                            requestEvent.getBusinessId()
+                                    )
+                                    .ownerUserId(
+                                            requestEvent.getUserId()
+                                    )
+                                    .businessType(
+                                            BusinessType.valueOf(
+                                                    requestEvent.getBusinessType()
+                                            )
+                                    )
+                                    .businessName(
+                                            requestEvent.getBusinessName()
+                                    )
+                                    .description(
+                                            requestEvent.getDescription()
+                                    )
+                                    .phone(
+                                            requestEvent.getPhone()
+                                    )
+                                    .email(
+                                            requestEvent.getEmail()
+                                    )
+                                    .address(
+                                            requestEvent.getAddress()
+                                    )
+                                    .latitude(
+                                            requestEvent.getLatitude()
+                                    )
+                                    .longitude(
+                                            requestEvent.getLongitude()
+                                    )
+                                    .build();
+
+                    businessApplicationService.createApplication(request);
+
+                    log.info(
+                            "Business application created from request event: businessId={}",
+                            requestEvent.getBusinessId()
+                    );
+                }
+
+            } else if (event instanceof ApplicationCreatedEvent applicationCreatedEvent) {
 
                 log.info(
                         "Received application created event: eventId={}, eventType={}, businessId={}, applicationId={}",

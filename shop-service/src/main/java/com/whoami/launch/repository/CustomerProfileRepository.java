@@ -1,6 +1,7 @@
 package com.whoami.launch.repository;
 
 import com.whoami.launch.entity.CustomerProfile;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +12,8 @@ import java.util.Optional;
 @Repository
 public interface CustomerProfileRepository
         extends JpaRepository<CustomerProfile, Long> {
+
+    Optional<CustomerProfile> findByCustomerId(String customerId);
 
     Optional<CustomerProfile> findByUserId(String userId);
 

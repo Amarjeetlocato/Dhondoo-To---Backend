@@ -101,15 +101,15 @@ ENTRYPOINT ["java","-jar","app.jar"]
 # Super User Service
 # ============================================================
 
-# FROM eclipse-temurin:21-jre AS super-user
+FROM eclipse-temurin:21-jre AS super-user
 
-# WORKDIR /app
+WORKDIR /app
 
-# COPY --from=builder /app/SuperUSer/target/*.jar app.jar
+COPY --from=builder /app/SuperUSer/target/*.jar app.jar
 
-# EXPOSE 8088
+EXPOSE 8088
 
-# ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
 
 
 # ============================================================

@@ -9,6 +9,7 @@ import com.whoami.launch.dto.NearbyServiceDTO;
 
 public interface NearbyService {
 
+    // Existing user-based methods
     List<NearbyBusinessDTO> findNearbyBusiness(
             String userId,
             Double radiusKm,
@@ -26,6 +27,31 @@ public interface NearbyService {
 
     List<NearbyReelDTO> findNearbyReels(
             String userId,
+            Double radiusKm,
+            int limit);
+
+    // Anonymous/public location-based methods
+    List<NearbyBusinessDTO> findNearbyBusiness(
+            Double latitude,
+            Double longitude,
+            Double radiusKm,
+            int limit);
+
+    List<NearbyProductDTO> findNearbyProducts(
+            Double latitude,
+            Double longitude,
+            Double radiusKm,
+            int limit);
+
+    List<NearbyServiceDTO> findNearbyServices(
+            Double latitude,
+            Double longitude,
+            Double radiusKm,
+            int limit);
+
+    List<NearbyReelDTO> findNearbyReels(
+            Double latitude,
+            Double longitude,
             Double radiusKm,
             int limit);
 }

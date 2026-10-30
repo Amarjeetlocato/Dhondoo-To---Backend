@@ -7,6 +7,11 @@ public interface OtpService {
             String otp
     );
 
+    String generateAndSendResetOtp(
+            String email,
+            String otp
+    );
+
     boolean validateOtp(
             String email,
             String otp

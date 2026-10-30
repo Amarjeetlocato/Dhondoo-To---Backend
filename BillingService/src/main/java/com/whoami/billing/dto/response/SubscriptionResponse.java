@@ -15,7 +15,7 @@ import java.util.UUID;
 @Builder
 public class SubscriptionResponse {
 
-    private String id;
+    private UUID id;
 
     private String customerId;
 

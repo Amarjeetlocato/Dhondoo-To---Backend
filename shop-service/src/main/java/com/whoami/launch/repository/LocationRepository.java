@@ -6,10 +6,13 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LocationRepository
         extends JpaRepository<Location, Long> {
+
+    Optional<Location> findByLocationId(String locationId);
 
     List<Location> findByUserIdOrderByTimestampDesc(String userId);
 

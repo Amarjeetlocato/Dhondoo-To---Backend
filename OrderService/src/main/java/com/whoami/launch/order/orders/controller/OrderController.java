@@ -72,4 +72,54 @@ public class OrderController {
                         request.getStatus(),
                         businessId));
     }
+
+    @PostMapping("/{orderId}/dispatch-parcel")
+    public ResponseEntity<OrderResponse> dispatchParcel(
+            @PathVariable String orderId,
+            @RequestParam String businessId,
+            @RequestBody com.whoami.launch.order.orders.dto.DispatchParcelRequest request) {
+
+        return ResponseEntity.ok(
+                orderService.dispatchParcel(
+                        orderId,
+                        businessId,
+                        request));
+    }
+
+    @GetMapping("/{orderId}/tracking")
+    public ResponseEntity<OrderResponse> getTracking(
+            @PathVariable String orderId) {
+
+        return ResponseEntity.ok(
+                orderService.getTracking(orderId));
+    }
+
+    @PutMapping("/{orderId}/delivery-location")
+    public ResponseEntity<OrderResponse> updateDeliveryLocation(
+            @PathVariable String orderId,
+            @RequestBody com.whoami.launch.order.orders.dto.UpdateDeliveryLocationRequest request) {
+
+        return ResponseEntity.ok(
+                orderService.updateDeliveryLocation(
+                        orderId,
+                        request));
+    }
+
+    @PostMapping("/estimate-delivery-fee")
+    public ResponseEntity<com.whoami.launch.order.orders.dto.DeliveryEstimateResponse> estimateDeliveryFee(
+            @RequestBody com.whoami.launch.order.orders.dto.DeliveryEstimateRequest request) {
+
+        return ResponseEntity.ok(
+                orderService.estimateDeliveryFee(request));
+    }
+
+    @PutMapping("/{orderId}/update-order-details")
+    public ResponseEntity<OrderResponse> updateOrderDetails(
+            @PathVariable String orderId,
+            @RequestParam String businessId,
+            @RequestBody com.whoami.launch.order.orders.dto.UpdateOrderDetailsRequest request) {
+
+        return ResponseEntity.ok(
+                orderService.updateOrderDetails(orderId, businessId, request));
+    }
 }

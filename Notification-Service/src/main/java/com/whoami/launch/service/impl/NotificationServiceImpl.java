@@ -12,6 +12,11 @@ import com.locato.constants.events.business.BusinessCreatedEvent;
 import com.locato.constants.events.business.BusinessDeletedEvent;
 import com.locato.constants.events.business.BusinessStatusChangedEvent;
 import com.locato.constants.events.business.BusinessUpdatedEvent;
+import com.locato.constants.events.businessoperation.DocumentApprovedEvent;
+import com.locato.constants.events.businessoperation.DocumentRejectedEvent;
+import com.locato.constants.events.businessoperation.VerificationApprovedEvent;
+import com.locato.constants.events.businessoperation.VerificationRejectedEvent;
+import com.locato.constants.events.businessoperation.VerificationReuploadRequiredEvent;
 import com.locato.constants.events.product.ProductCreatedEvent;
 import com.locato.constants.events.product.ProductDeletedEvent;
 import com.locato.constants.events.product.ProductUpdatedEvent;
@@ -66,7 +71,7 @@ public class NotificationServiceImpl
         );
 
         String notificationId =
-                "NOTIFICATION_" + UUID.randomUUID();
+                "NOTIF_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
 
         String actionsJson =
                 templateService.buildActions(
@@ -908,6 +913,96 @@ public class NotificationServiceImpl
                         .type(NotificationType.REEL)
                         .sendPush(true)
                         .build();
+
+        createNotification(request);
+    }
+
+    @Override
+    public void handleDocumentApproved(DocumentApprovedEvent event) {
+        String userId = event.getPerformedBy() != null && !event.getPerformedBy().isEmpty() 
+            ? event.getPerformedBy() : "USER_" + event.getBusinessId();
+
+        NotificationRequest request = NotificationRequest.builder()
+                .userId(userId)
+                .title("Business Document Approved ✔️")
+                .message("Your business document has been approved by admin! Step 3 (Verification Video) is now unlocked.")
+                .targetId(event.getBusinessId())
+                .targetType("BUSINESS_VERIFICATION")
+                .type(NotificationType.SHOP)
+                .sendPush(true)
+                .build();
+
+        createNotification(request);
+    }
+
+    @Override
+    public void handleDocumentRejected(DocumentRejectedEvent event) {
+        String userId = event.getPerformedBy() != null && !event.getPerformedBy().isEmpty() 
+            ? event.getPerformedBy() : "USER_" + event.getBusinessId();
+
+        NotificationRequest request = NotificationRequest.builder()
+                .userId(userId)
+                .title("Document Verification Status Update ⚠️")
+                .message("Your business document requires review: " + (event.getReason() != null ? event.getReason() : "Please re-upload document."))
+                .targetId(event.getBusinessId())
+                .targetType("BUSINESS_VERIFICATION")
+                .type(NotificationType.SHOP)
+                .sendPush(true)
+                .build();
+
+        createNotification(request);
+    }
+
+    @Override
+    public void handleVerificationApproved(VerificationApprovedEvent event) {
+        String userId = event.getPerformedBy() != null && !event.getPerformedBy().isEmpty() 
+            ? event.getPerformedBy() : "USER_" + event.getBusinessId();
+
+        NotificationRequest request = NotificationRequest.builder()
+                .userId(userId)
+                .title("Business Verification Approved 🎉")
+                .message("Congratulations! Your business verification has been approved by admin. Your official verified merchant badge is active.")
+                .targetId(event.getBusinessId())
+                .targetType("BUSINESS_VERIFICATION")
+                .type(NotificationType.SHOP)
+                .sendPush(true)
+                .build();
+
+        createNotification(request);
+    }
+
+    @Override
+    public void handleVerificationRejected(VerificationRejectedEvent event) {
+        String userId = event.getPerformedBy() != null && !event.getPerformedBy().isEmpty() 
+            ? event.getPerformedBy() : "USER_" + event.getBusinessId();
+
+        NotificationRequest request = NotificationRequest.builder()
+                .userId(userId)
+                .title("Business Verification Status Update ⚠️")
+                .message("Your business verification request was reviewed: " + (event.getReason() != null ? event.getReason() : "Please review feedback."))
+                .targetId(event.getBusinessId())
+                .targetType("BUSINESS_VERIFICATION")
+                .type(NotificationType.SHOP)
+                .sendPush(true)
+                .build();
+
+        createNotification(request);
+    }
+
+    @Override
+    public void handleVerificationReuploadRequired(VerificationReuploadRequiredEvent event) {
+        String userId = event.getPerformedBy() != null && !event.getPerformedBy().isEmpty() 
+            ? event.getPerformedBy() : "USER_" + event.getBusinessId();
+
+        NotificationRequest request = NotificationRequest.builder()
+                .userId(userId)
+                .title("Video Re-upload Required 📹")
+                .message("Reviewer feedback: " + (event.getReason() != null ? event.getReason() : "Please record and submit a new verification video."))
+                .targetId(event.getBusinessId())
+                .targetType("BUSINESS_VERIFICATION")
+                .type(NotificationType.SHOP)
+                .sendPush(true)
+                .build();
 
         createNotification(request);
     }

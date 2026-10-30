@@ -11,4 +11,8 @@ public interface OrderItemRepository
         extends JpaRepository<OrderItem, Long> {
 
     List<OrderItem> findByOrderId(String orderId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    void deleteByOrderId(String orderId);
 }

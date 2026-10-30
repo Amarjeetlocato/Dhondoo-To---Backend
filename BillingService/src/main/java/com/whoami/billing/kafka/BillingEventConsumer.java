@@ -21,6 +21,7 @@ public class BillingEventConsumer {
 
     @KafkaListener(
             topics = KafkaTopics.BILLING_EVENTS,
+            containerFactory = "billingRequestedKafkaListenerContainerFactory",
             groupId = "${spring.kafka.consumer.group-id}"
     )
     public void consumeBillingRequested(BillingRequestedEvent event) {

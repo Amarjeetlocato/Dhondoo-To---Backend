@@ -71,7 +71,7 @@ public class ReelController {
 
     // ================= CREATE =================
 
-    @PostMapping
+    @PostMapping({"", "/create"})
     public ResponseEntity<Reel> createReel(
             @RequestBody Reel reel) {
 

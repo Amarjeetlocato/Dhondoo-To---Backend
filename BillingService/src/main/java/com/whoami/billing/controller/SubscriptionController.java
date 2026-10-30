@@ -32,6 +32,13 @@ public class SubscriptionController {
         return subscriptionService.getById(id);
     }
 
+    @GetMapping("/customer/{customerId}")
+    public java.util.List<SubscriptionResponse> getByCustomerId(
+            @PathVariable String customerId) {
+
+        return subscriptionService.getByCustomerId(customerId);
+    }
+
     @GetMapping("/gateway/{gatewaySubscriptionId}")
     public SubscriptionResponse getByGatewaySubscriptionId(
             @PathVariable String gatewaySubscriptionId) {

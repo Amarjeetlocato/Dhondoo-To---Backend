@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -28,6 +29,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     public SubscriptionResponse create(
             CreateSubscriptionRequest request) {
+
+        validateBusinessVerification(request.getCustomerId());
 
         BillingPlan plan = billingPlanRepository.findById(
                 request.getPlanId()
@@ -112,6 +115,15 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<SubscriptionResponse> getByCustomerId(String customerId) {
+        return repository.findByCustomerId(customerId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public SubscriptionResponse getByGatewaySubscriptionId(
             String gatewaySubscriptionId) {
 
@@ -134,6 +146,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             String gatewaySubscriptionId) {
 
         Subscription subscription = findSubscription(subscriptionId);
+
+        validateBusinessVerification(subscription.getCustomerId());
 
         if (subscription.getStatus() == SubscriptionStatus.CANCELLED
                 || subscription.getStatus() == SubscriptionStatus.EXPIRED) {
@@ -174,6 +188,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         };
 
         subscription.setNextBillingDate(nextBillingDate);
+
+        try {
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            String shopUrl = "http://localhost:8084/internal/businesses/" + subscription.getCustomerId() + "/subscription-status?active=true";
+            restTemplate.put(shopUrl, null);
+        } catch (Exception ignored) {
+        }
 
         return mapToResponse(
                 repository.save(subscription)
@@ -329,6 +350,27 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                                         + subscriptionId
                         )
                 );
+    }
+
+    private void validateBusinessVerification(String customerId) {
+        if (customerId == null || customerId.isBlank()) {
+            return;
+        }
+
+        try {
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            String url = "http://localhost:8084/internal/businesses/" + customerId + "/access-state";
+            org.springframework.http.ResponseEntity<java.util.Map> response = restTemplate.getForEntity(url, java.util.Map.class);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Boolean verified = (Boolean) response.getBody().get("verified");
+                if (Boolean.FALSE.equals(verified)) {
+                    throw new IllegalStateException("Business owner must be verified before purchasing or activating a subscription.");
+                }
+            }
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (Exception ignored) {
+        }
     }
 
     private SubscriptionResponse mapToResponse(

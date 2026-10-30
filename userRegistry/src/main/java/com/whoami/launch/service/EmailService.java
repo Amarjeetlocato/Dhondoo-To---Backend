@@ -2,40 +2,21 @@ package com.whoami.launch.service;
 
 public interface EmailService {
 
-    void sendWelcomeEmail(
-            String email,
-            String username
-    );
+    void sendWelcomeEmail(String email, String username);
 
-    void sendForgotPasswordEmail(
-            String email,
-            String otp
-    );
+    void sendVerificationOtpEmail(String email, String otp);
 
-    void sendPasswordChangedEmail(
-            String email,
-            String username
-    );
+    void sendForgotPasswordEmail(String email, String otp);
 
-    void sendPasswordUpdatedEmail(
-            String email,
-            String username
-    );
+    void sendProfileUpdatedEmail(String email, String username);
+    
+    void sendPasswordUpdatedEmail(String email, String username);
 
-    void sendEmailUpdatedEmail(
-            String email,
-            String username
-    );
+    void sendEmailUpdatedEmail(String email, String username);
 
-    void sendAccountDeletedEmail(
-            String email,
-            String username
-    );
+    void sendAccountDeletedEmail(String email, String username);
 
-    void sendAccountRetrievedEmail(
-            String email,
-            String username
-    );
+    void sendAccountRetrievedEmail(String email, String username);
 
     void sendNewLoginEmail(
             String email,
@@ -43,4 +24,4 @@ public interface EmailService {
             String device,
             String time
     );
-}
+} 

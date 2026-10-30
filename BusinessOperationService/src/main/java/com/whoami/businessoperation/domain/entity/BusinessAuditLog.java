@@ -24,9 +24,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BusinessAuditLog {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
     @Column(name = "business_id", nullable = false)
     private String businessId;

@@ -15,10 +15,10 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.admin-secret}")
+    @Value("${jwt.admin-secret:WHOAMI_SUPERUSER_SECRET_KEY_2026_VERY_SECURE_TOKEN_STRING}")
     private String adminSecret;
 
-    @Value("${jwt.user-secret}")
+    @Value("${jwt.user-secret:afafasfafafasfasfasfafacasdasfasxASFACASDFACASDFASFASFDAFASFASDAADSCSDFADCVSGCFVADXCcadwavfsfarvf}")
     private String userSecret;
 
     private Key getAdminKey() {

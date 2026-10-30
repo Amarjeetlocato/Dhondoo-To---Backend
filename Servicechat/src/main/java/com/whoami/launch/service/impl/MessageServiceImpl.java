@@ -257,27 +257,31 @@ public class MessageServiceImpl implements MessageService {
     private void notifyReceiver(
             Message message) {
 
-        ChatNotificationEvent event =
-                new ChatNotificationEvent();
+        try {
+            ChatNotificationEvent event =
+                    new ChatNotificationEvent();
 
-        event.setSenderId(
-                message.getSenderId());
+            event.setSenderId(
+                    message.getSenderId());
 
-        event.setReceiverId(
-                message.getReceiverId());
+            event.setReceiverId(
+                    message.getReceiverId());
 
-        if (message.getConversation() != null) {
+            if (message.getConversation() != null) {
 
-            event.setConversationId(
-                    message.getConversation()
-                            .getConversationId());
+                event.setConversationId(
+                        message.getConversation()
+                                .getConversationId());
+            }
+
+            event.setMessagePreview(
+                    message.getContent() != null ? message.getContent() : "New Message");
+
+            notificationProducer
+                    .sendNotification(event);
+        } catch (Exception e) {
+            System.err.println("⚠️ Notification produce skipped: " + e.getMessage());
         }
-
-        event.setMessagePreview(
-                message.getContent());
-
-        notificationProducer
-                .sendNotification(event);
     }
 
     @Override

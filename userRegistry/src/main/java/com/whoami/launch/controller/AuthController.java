@@ -23,8 +23,8 @@ import com.whoami.launch.dto.LoginRequest;
 import com.whoami.launch.dto.RefreshTokenRequest;
 import com.whoami.launch.dto.RegisterRequest;
 import com.whoami.launch.dto.UpdatePasswordRequest;
+import com.whoami.launch.dto.UserResponse;
 import com.whoami.launch.dto.VerifyOtpRequest;
-import com.whoami.launch.entity.User;
 import com.whoami.launch.service.AuthService;
 import com.whoami.launch.service.UserService;
 
@@ -51,25 +51,37 @@ public class AuthController {
     // ================= GET USER =================
 
     @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<User>> getUserByUserId(
+    public ResponseEntity<ApiResponse<UserResponse>> getUserByUserId(
             @PathVariable String userId) {
 
         return userService.getUserByUserId(userId)
-                .map(user -> ResponseEntity.ok(
-                        new ApiResponse<>(
-                                true,
-                                "User found",
-                                user
-                        )
-                ))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(
-                                new ApiResponse<>(
-                                        false,
-                                        "User not found",
-                                        null
+                .map(user -> {
+
+                    UserResponse response = new UserResponse();
+
+                    response.setUserId(user.getUserId());
+                    response.setFullName(user.getFullName());
+                    response.setEmail(user.getEmail());
+                    response.setVerified(user.isVerified());
+
+                    return ResponseEntity.ok(
+                            new ApiResponse<>(
+                                    true,
+                                    "User found",
+                                    response
+                            )
+                    );
+                })
+                .orElseGet(() ->
+                        ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(
+                                        new ApiResponse<>(
+                                                false,
+                                                "User not found",
+                                                null
+                                        )
                                 )
-                        ));
+                );
     }
 
     // ================= LOGIN =================
@@ -78,8 +90,10 @@ public class AuthController {
     public ResponseEntity<ApiResponse<JwtResponse>> login(
             @Valid @RequestBody LoginRequest request) {
 
-        logger.info("Login request received for email: {}",
-                request.getEmail());
+        logger.info(
+                "Login request received for email: {}",
+                request.getEmail()
+        );
 
         JwtResponse jwtResponse =
                 authService.login(request);

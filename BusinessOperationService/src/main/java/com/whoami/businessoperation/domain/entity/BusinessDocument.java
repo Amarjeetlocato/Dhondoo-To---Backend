@@ -47,26 +47,26 @@ public class BusinessDocument {
             unique = true,
             nullable = false,
             updatable = false,
-            length = 40
+            length = 100
     )
     private String documentId;
 
     @Column(
             name = "business_id",
             nullable = false,
-            length = 40
+            length = 100
     )
     private String businessId;
 
     @Column(
             name = "application_id",
             nullable = false,
-            length = 40
+            length = 100
     )
     private String applicationId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "document_type", nullable = false, length = 50)
+    @Column(name = "document_type", nullable = false, length = 100)
     private DocumentType documentType;
 
     @Column(name = "document_url", nullable = false, length = 1000)
@@ -79,7 +79,7 @@ public class BusinessDocument {
     private String documentNumber;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "document_status", nullable = false, length = 30)
+    @Column(name = "document_status", nullable = false, length = 100)
     @Builder.Default
     private DocumentStatus documentStatus = DocumentStatus.PENDING;
 

@@ -6,5 +6,13 @@ public enum BusinessStatus {
 
     CLOSED,
 
-    AUTO
+    AUTO,
+
+    ACTIVE,
+
+    SUSPENDED,
+
+    BLOCKED,
+
+    PENDING_VERIFICATION
 }

@@ -1,5 +1,6 @@
 package com.whoami.launch.order.cart.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
@@ -16,17 +17,27 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class AddToCartRequest {
 
+    @JsonProperty("businessId")
+    @JsonAlias({"businessId", "shopId"})
     @NotBlank(message = "Business ID is required")
     private String businessId;
 
+    @JsonProperty("productId")
+    @JsonAlias({"productId", "id"})
     @NotBlank(message = "Product ID is required")
     private String productId;
 
+    @JsonProperty("productName")
+    @JsonAlias({"productName", "productNameSnapshot", "name"})
     @NotBlank(message = "Product name is required")
     private String productName;
 
+    @JsonProperty("imageUrl")
+    @JsonAlias({"imageUrl", "imageSnapshot", "image"})
     private String imageUrl;
 
+    @JsonProperty("price")
+    @JsonAlias({"price", "priceSnapshot", "productPrice"})
     @NotNull(message = "Price is required")
     @DecimalMin(
             value = "0.0",
@@ -41,25 +52,4 @@ public class AddToCartRequest {
             message = "Quantity must be at least 1"
     )
     private Integer quantity;
-
-    @JsonProperty("productNameSnapshot")
-    private void setProductNameSnapshot(String productNameSnapshot) {
-        if (this.productName == null) {
-            this.productName = productNameSnapshot;
-        }
-    }
-
-    @JsonProperty("imageSnapshot")
-    private void setImageSnapshot(String imageSnapshot) {
-        if (this.imageUrl == null) {
-            this.imageUrl = imageSnapshot;
-        }
-    }
-
-    @JsonProperty("priceSnapshot")
-    private void setPriceSnapshot(BigDecimal priceSnapshot) {
-        if (this.price == null) {
-            this.price = priceSnapshot;
-        }
-    }
 }

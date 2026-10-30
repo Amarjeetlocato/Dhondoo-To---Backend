@@ -1,9 +1,14 @@
 package com.whoami.businessoperation.dto.response;
 
-import com.whoami.businessoperation.domain.enums.VerificationStatus;
-import lombok.*;
-
 import java.time.LocalDateTime;
+
+import com.whoami.businessoperation.domain.enums.VerificationStatus;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -23,6 +28,14 @@ public class BusinessVerificationResponse {
     private String verificationVideoUrl;
 
     private String verificationVideoPublicId;
+
+    private Double recordingLatitude;
+
+    private Double recordingLongitude;
+
+    private Boolean locationVerified;
+
+    private Double distanceMeters;
 
     private String reviewerComment;
 

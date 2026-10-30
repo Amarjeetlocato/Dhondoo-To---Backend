@@ -10,14 +10,14 @@ public interface BusinessVerificationHistoryRepository
         extends JpaRepository<BusinessVerificationHistory, Long> {
 
     List<BusinessVerificationHistory> findByBusinessIdOrderByCreatedAtDesc(
-    		String businessId
+            String businessId
     );
 
     List<BusinessVerificationHistory> findByApplicationIdOrderByCreatedAtDesc(
-    		String applicationId
+            String applicationId
     );
 
     List<BusinessVerificationHistory> findByVerificationIdOrderByCreatedAtDesc(
-    		String verificationId
+            String verificationId
     );
 }

@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dhondoo To - Razorpay Test</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+  <h2>Dhondoo To - Razorpay Test Payment</h2>
+  <p>Amount: ₹1.00</p>
+  <button id="payButton">Pay ₹1 (Test Mode)</button>
+  <pre id="result"></pre>
+
+  <script>
+    const keyId = "rzp_test_TlnLTA0p0h2nqq";
+    const orderId = "order_Tmxhjt2blU0nz0";
+    const paymentId = "3ae4a77c-77fc-4942-951a-88d258c2700f";
+
+    document.getElementById("payButton").addEventListener("click", function () {
+      const options = {
+        key: keyId,
+        amount: 100,
+        currency: "INR",
+        name: "Dhondoo To",
+        description: "Backend Test Payment",
+        order_id: orderId,
+        handler: async function (response) {
+          document.getElementById("result").textContent =
+            "Checkout response received:\n" +
+            JSON.stringify(response, null, 2) +
+            "\n\nSignature verification is not yet submitted to backend.";
+        },
+        modal: {
+          ondismiss: function () {
+            document.getElementById("result").textContent =
+              "Checkout closed without completing payment.";
+          }
+        },
+        theme: { color: "#3399cc" }
+      };
+
+      const checkout = new Razorpay(options);
+      checkout.on("payment.failed", function (response) {
+        document.getElementById("result").textContent =
+          JSON.stringify(response.error, null, 2);
+      });
+      checkout.open();
+    });
+  </script>
+</body>
+</html>

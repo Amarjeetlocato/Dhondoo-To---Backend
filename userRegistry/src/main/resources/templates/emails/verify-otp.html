@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Email Verification</title>
+</head>
+
+<body>
+
+<h2>Verify Your Email</h2>
+
+<p>Hello <span th:text="${name}"></span>,</p>
+
+<p>
+    Thank you for creating your Launch account.
+</p>
+
+<p>
+    Your email verification OTP is:
+</p>
+
+<h1 th:text="${otp}"></h1>
+
+<p>
+    This OTP will expire in 10 minutes.
+</p>
+
+<p>
+    If you did not create this account, you can safely ignore this email.
+</p>
+
+<p>
+    Regards,<br>
+    Team Locato by mynear.shop
+</p>
+
+</body>
+
+</html>

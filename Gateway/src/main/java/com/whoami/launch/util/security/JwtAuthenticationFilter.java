@@ -33,11 +33,11 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
                 .getURI()
                 .getPath();
 
-        String method = exchange.getRequest()
-                .getMethod()
-                .name();
+        String method = exchange.getRequest().getMethod() != null 
+                ? exchange.getRequest().getMethod().name() 
+                : "";
 
-        System.out.println("JWT FILTER PATH = " + path);
+        System.out.println("JWT FILTER METHOD = " + method + ", PATH = " + path);
 
         // ====================================
         // ALLOW OPTIONS (CORS PREFLIGHT)
@@ -45,6 +45,8 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
         if ("OPTIONS".equalsIgnoreCase(method)) {
             return chain.filter(exchange);
         }
+
+        boolean isGet = "GET".equalsIgnoreCase(method);
 
         // ====================================
         // PUBLIC ROUTES
@@ -56,7 +58,7 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
                 path.equals("/actuator/health")
                 || path.equals("/actuator/health/liveness")
                 || path.equals("/actuator/health/readiness")
-                || path.equals("/actuator/prometheus")
+
                 // --------------------------------
                 // AUTH APIs
                 // --------------------------------
@@ -82,63 +84,61 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
                 || path.equals("/admin/auth/login")
 
                 // --------------------------------
-                // PUBLIC SHOP APIs
+                // PUBLIC SHOP & NEARBY GET APIs ONLY
                 // --------------------------------
-                || path.startsWith("/api/public/")
+                || (isGet && (
+                       path.startsWith("/api/public/")
+                    || path.startsWith("/api/nearby/")
+                    || path.startsWith("/api/products")
+                    || path.startsWith("/api/services")
+                    || path.startsWith("/api/reels")
+                    || path.startsWith("/api/businesses")
+                    || path.startsWith("/api/shops")
+                    || path.startsWith("/api/business-operations/")
+                    || path.startsWith("/api/business-verifications/")
+                    || path.startsWith("/api/billing/")
+                    || path.startsWith("/internal/")
+                   ))
         ) {
 
             System.out.println(
-                    "PUBLIC API SKIPPED JWT: " + path
+                    "PUBLIC API SKIPPED JWT: [" + method + "] " + path
             );
 
             return chain.filter(exchange);
         }
 
         // ====================================
-// GET JWT TOKEN
-// ====================================
-String token = null;
+        // GET AUTH HEADER
+        // ====================================
+        String authHeader = exchange
+                .getRequest()
+                .getHeaders()
+                .getFirst(HttpHeaders.AUTHORIZATION);
 
-// ------------------------------------
-// NORMAL HTTP APIs
-// Authorization: Bearer <JWT>
-// ------------------------------------
-String authHeader = exchange
-        .getRequest()
-        .getHeaders()
-        .getFirst(HttpHeaders.AUTHORIZATION);
+        System.out.println(
+                "AUTH HEADER = " + authHeader
+        );
 
-if (authHeader != null && authHeader.startsWith("Bearer ")) {
-    token = authHeader.substring(7);
-}
+        // ====================================
+        // TOKEN MISSING
+        // ====================================
+        if (
+                authHeader == null
+                        || !authHeader.startsWith("Bearer ")
+        ) {
 
-// ------------------------------------
-// WEBSOCKET
-// /ws?token=<JWT>
-// ------------------------------------
-if (token == null && "/ws".equals(path)) {
+            return writeErrorResponse(
+                    exchange,
+                    HttpStatus.UNAUTHORIZED,
+                    "Authorizations token is missing"
+            );
+        }
 
-    token = exchange.getRequest()
-            .getQueryParams()
-            .getFirst("token");
-
-    System.out.println(
-            "WEBSOCKET TOKEN FOUND = "
-                    + (token != null ? "YES" : "NO")
-    );
-}
-
-// ------------------------------------
-// TOKEN MISSING
-// ------------------------------------
-if (token == null || token.isBlank()) {
-
-    return writeErrorResponse(
-            exchange,
-            HttpStatus.UNAUTHORIZED,
-            "Authorization token is missing"
-    );
-}
+        // ====================================
+        // EXTRACT TOKEN
+        // ====================================
+        String token = authHeader.substring(7);
 
         try {
 

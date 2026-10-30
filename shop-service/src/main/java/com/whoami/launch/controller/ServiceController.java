@@ -79,7 +79,7 @@ public class ServiceController {
                 serviceService.searchServices(query));
     }
 
-    @PostMapping
+    @PostMapping({"", "/create"})
     public ResponseEntity<Service> createService(
             @RequestBody Service service) {
 

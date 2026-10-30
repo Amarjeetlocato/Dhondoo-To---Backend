@@ -41,7 +41,7 @@
         <!-- Business lifecycle, verification and operations -->
         <module>BusinessOperationService</module>
 
-        <!-- <module>SuperUSer</module> -->
+        <module>SuperUSer</module>
 
     </modules>
 

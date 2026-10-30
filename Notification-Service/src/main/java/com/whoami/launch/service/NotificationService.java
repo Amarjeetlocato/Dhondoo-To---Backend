@@ -7,6 +7,11 @@ import com.locato.constants.events.business.BusinessCreatedEvent;
 import com.locato.constants.events.business.BusinessDeletedEvent;
 import com.locato.constants.events.business.BusinessStatusChangedEvent;
 import com.locato.constants.events.business.BusinessUpdatedEvent;
+import com.locato.constants.events.businessoperation.DocumentApprovedEvent;
+import com.locato.constants.events.businessoperation.DocumentRejectedEvent;
+import com.locato.constants.events.businessoperation.VerificationApprovedEvent;
+import com.locato.constants.events.businessoperation.VerificationRejectedEvent;
+import com.locato.constants.events.businessoperation.VerificationReuploadRequiredEvent;
 import com.locato.constants.events.product.ProductCreatedEvent;
 import com.locato.constants.events.product.ProductDeletedEvent;
 import com.locato.constants.events.product.ProductUpdatedEvent;
@@ -75,4 +80,14 @@ public interface NotificationService {
     void handleReelUpdated(ReelUpdatedEvent event);
 
     void handleReelDeleted(ReelDeletedEvent event);
+
+    void handleDocumentApproved(DocumentApprovedEvent event);
+
+    void handleDocumentRejected(DocumentRejectedEvent event);
+
+    void handleVerificationApproved(VerificationApprovedEvent event);
+
+    void handleVerificationRejected(VerificationRejectedEvent event);
+
+    void handleVerificationReuploadRequired(VerificationReuploadRequiredEvent event);
 }

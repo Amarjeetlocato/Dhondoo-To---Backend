@@ -24,7 +24,11 @@ public class CartController {
     @PostMapping("/add")
     public ResponseEntity<CartResponse> addToCart(
             @Valid @RequestBody AddToCartRequest request,
-            @RequestParam String customerId) {
+            @RequestParam(required = false) String customerId) {
+
+        if (customerId == null || customerId.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
 
         CartResponse response =
                 cartService.addToCart(
@@ -37,7 +41,11 @@ public class CartController {
 
     @GetMapping
     public ResponseEntity<List<CartResponse>> getCart(
-            @RequestParam String customerId) {
+            @RequestParam(required = false) String customerId) {
+
+        if (customerId == null || customerId.isBlank()) {
+            return ResponseEntity.ok(List.of());
+        }
 
         return ResponseEntity.ok(
                 cartService.getCart(customerId)
@@ -47,7 +55,11 @@ public class CartController {
     @PutMapping("/update")
     public ResponseEntity<CartResponse> update(
             @Valid @RequestBody UpdateCartRequest request,
-            @RequestParam String customerId) {
+            @RequestParam(required = false) String customerId) {
+
+        if (customerId == null || customerId.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
 
         return ResponseEntity.ok(
                 cartService.updateQuantity(
@@ -60,7 +72,11 @@ public class CartController {
     @DeleteMapping("/remove/{cartId}")
     public ResponseEntity<Void> remove(
             @PathVariable String cartId,
-            @RequestParam String customerId) {
+            @RequestParam(required = false) String customerId) {
+
+        if (customerId == null || customerId.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
 
         cartService.removeItem(
                 customerId,
@@ -72,7 +88,11 @@ public class CartController {
 
     @DeleteMapping("/clear")
     public ResponseEntity<Void> clear(
-            @RequestParam String customerId) {
+            @RequestParam(required = false) String customerId) {
+
+        if (customerId == null || customerId.isBlank()) {
+            return ResponseEntity.noContent().build();
+        }
 
         cartService.clearCart(customerId);
 

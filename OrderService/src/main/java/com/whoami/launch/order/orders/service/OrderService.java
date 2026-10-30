@@ -32,4 +32,27 @@ public interface OrderService {
             OrderStatus newStatus,
             String businessId
     );
+
+    OrderResponse dispatchParcel(
+            String orderId,
+            String businessId,
+            com.whoami.launch.order.orders.dto.DispatchParcelRequest request
+    );
+
+    OrderResponse getTracking(String orderId);
+
+    OrderResponse updateDeliveryLocation(
+            String orderId,
+            com.whoami.launch.order.orders.dto.UpdateDeliveryLocationRequest request
+    );
+
+    com.whoami.launch.order.orders.dto.DeliveryEstimateResponse estimateDeliveryFee(
+            com.whoami.launch.order.orders.dto.DeliveryEstimateRequest request
+    );
+
+    OrderResponse updateOrderDetails(
+            String orderId,
+            String businessId,
+            com.whoami.launch.order.orders.dto.UpdateOrderDetailsRequest request
+    );
 }

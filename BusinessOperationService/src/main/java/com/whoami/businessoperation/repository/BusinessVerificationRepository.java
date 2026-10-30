@@ -15,6 +15,8 @@ public interface BusinessVerificationRepository
 
     Optional<BusinessVerification> findByApplicationId(String applicationId);
 
+    Optional<BusinessVerification> findByVerificationId(String verificationId);
+
     List<BusinessVerification> findByVerificationStatus(
             VerificationStatus verificationStatus
     );

@@ -25,14 +25,14 @@ public class Order {
             unique = true,
             nullable = false,
             updatable = false,
-            length = 40
+            length = 64
     )
     private String orderId;
 
-    @Column(nullable = false, length = 40)
+    @Column(nullable = false, length = 64)
     private String customerId;
 
-    @Column(nullable = false, length = 40)
+    @Column(nullable = false, length = 64)
     private String businessId;
 
     @Column(length = 1024)
@@ -41,17 +41,73 @@ public class Order {
     @Column(length = 2048)
     private String businessLogoSnapshot;
 
+    @Column(length = 2048)
+    private String businessBannerSnapshot;
+
+    @Column(name = "business_phone", length = 30)
+    private String businessPhone;
+
+    @Column(name = "business_address", length = 2000)
+    private String businessAddress;
+
+    @Column(name = "business_lat")
+    private Double businessLat;
+
+    @Column(name = "business_lng")
+    private Double businessLng;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status;
 
     private BigDecimal subtotal;
 
+    private BigDecimal deliveryFee;
+
+    @Column(name = "fulfillment_type", length = 50)
+    private String fulfillmentType;
+
     @Column(length = 1000)
     private String customerNote;
 
     @Column(length = 2000)
     private String deliveryAddress;
+
+    @Column(name = "customer_phone", length = 30)
+    private String customerPhone;
+
+    @Column(name = "delivery_partner", length = 100)
+    private String deliveryPartner;
+
+    @Column(name = "tracking_id", length = 100)
+    private String trackingId;
+
+    @Column(name = "delivery_status", length = 50)
+    private String deliveryStatus;
+
+    @Column(name = "delivery_boy_name", length = 150)
+    private String deliveryBoyName;
+
+    @Column(name = "delivery_boy_phone", length = 30)
+    private String deliveryBoyPhone;
+
+    @Column(name = "delivery_boy_lat")
+    private Double deliveryBoyLat;
+
+    @Column(name = "delivery_boy_lng")
+    private Double deliveryBoyLng;
+
+    @Column(name = "customer_lat")
+    private Double customerLat;
+
+    @Column(name = "customer_lng")
+    private Double customerLng;
+
+    @Column(name = "estimated_delivery_time", length = 100)
+    private String estimatedDeliveryTime;
+
+    @Column(name = "dispatch_api_url", length = 1000)
+    private String dispatchApiUrl;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

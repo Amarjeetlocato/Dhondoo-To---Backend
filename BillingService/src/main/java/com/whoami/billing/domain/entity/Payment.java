@@ -40,6 +40,9 @@ public class Payment {
     @Column(name = "gateway_payment_id", length = 150)
     private String gatewayPaymentId;
 
+    @Column(name = "gateway_signature", length = 255)
+    private String gatewaySignature;
+
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
@@ -52,6 +55,9 @@ public class Payment {
 
     @Column(name = "payment_method", length = 50)
     private String paymentMethod;
+
+    @Column(name = "failure_reason", length = 500)
+    private String failureReason;
 
     @Column(name = "paid_at")
     private LocalDateTime paidAt;

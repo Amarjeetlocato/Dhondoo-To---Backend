@@ -61,4 +61,12 @@ public interface BusinessService {
     FollowBusinessResponse getFollowStatus(
             String businessId,
             String userId);
+
+    void requestVerification(
+            String businessId);
+
+    void requestBusinessDetailsChange(
+            String businessId,
+            Business changeDetails);
 }
+

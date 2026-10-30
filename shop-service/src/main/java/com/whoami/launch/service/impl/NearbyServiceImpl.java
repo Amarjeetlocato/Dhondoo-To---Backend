@@ -32,6 +32,10 @@ public class NearbyServiceImpl implements NearbyService {
     private final ReelRepository reelRepository;
     private final LocationService locationService;
 
+    // =========================================================
+    // EXISTING USER-BASED METHODS
+    // =========================================================
+
     @Override
     public List<NearbyBusinessDTO> findNearbyBusiness(
             String userId,
@@ -52,40 +56,12 @@ public class NearbyServiceImpl implements NearbyService {
 
         Location location = userLocation.get();
 
-        double userLat = location.getLatitude();
-        double userLon = location.getLongitude();
-
-        return businessRepository.findAllWithCoordinates()
-                .stream()
-                .map(business -> {
-
-                    double distance =
-                            DistanceCalculator.calculateDistance(
-                                    userLat,
-                                    userLon,
-                                    business.getLatitude(),
-                                    business.getLongitude()
-                            );
-
-                    return new NearbyBusinessDTO(
-                            business.getBusinessId(),
-                            business.getBusinessName(),
-                            business.getUserId(),
-                            business.getAddress(),
-                            business.getLatitude(),
-                            business.getLongitude(),
-                            distance,
-                            business.getMobileNumber()
-                    );
-                })
-                .filter(dto -> dto.getDistance() <= radiusKm)
-                .sorted((a, b) ->
-                        Double.compare(
-                                a.getDistance(),
-                                b.getDistance()
-                        ))
-                .limit(limit)
-                .collect(Collectors.toList());
+        return findNearbyBusiness(
+                location.getLatitude(),
+                location.getLongitude(),
+                radiusKm,
+                limit
+        );
     }
 
     @Override
@@ -108,52 +84,12 @@ public class NearbyServiceImpl implements NearbyService {
 
         Location location = userLocation.get();
 
-        double userLat = location.getLatitude();
-        double userLon = location.getLongitude();
-
-        return productRepository.findAllWithBusinessCoordinates()
-                .stream()
-                .map(product -> {
-
-                    Business business =
-                            businessRepository
-                                    .findByBusinessId(
-                                            product.getBusinessId())
-                                    .orElse(null);
-
-                    if (business == null
-                            || business.getLatitude() == null
-                            || business.getLongitude() == null) {
-
-                        return null;
-                    }
-
-                    double distance =
-                            DistanceCalculator.calculateDistance(
-                                    userLat,
-                                    userLon,
-                                    business.getLatitude(),
-                                    business.getLongitude()
-                            );
-
-                    return new NearbyProductDTO(
-                            product.getProductId(),
-                            product.getProductName(),
-                            product.getBusinessId(),
-                            product.getProductPrice(),
-                            product.getProductDescription(),
-                            distance
-                    );
-                })
-                .filter(java.util.Objects::nonNull)
-                .filter(dto -> dto.getDistance() <= radiusKm)
-                .sorted((a, b) ->
-                        Double.compare(
-                                a.getDistance(),
-                                b.getDistance()
-                        ))
-                .limit(limit)
-                .collect(Collectors.toList());
+        return findNearbyProducts(
+                location.getLatitude(),
+                location.getLongitude(),
+                radiusKm,
+                limit
+        );
     }
 
     @Override
@@ -176,57 +112,12 @@ public class NearbyServiceImpl implements NearbyService {
 
         Location location = userLocation.get();
 
-        double userLat = location.getLatitude();
-        double userLon = location.getLongitude();
-
-        return serviceRepository
-                .findAllFromBusinessesWithCoordinates()
-                .stream()
-                .map(service -> {
-
-                    Business business =
-                            businessRepository
-                                    .findByBusinessId(
-                                            service.getBusinessId())
-                                    .orElse(null);
-
-                    if (business == null
-                            || business.getLatitude() == null
-                            || business.getLongitude() == null) {
-
-                        return null;
-                    }
-
-                    double distance =
-                            DistanceCalculator.calculateDistance(
-                                    userLat,
-                                    userLon,
-                                    business.getLatitude(),
-                                    business.getLongitude()
-                            );
-
-                    return new NearbyServiceDTO(
-                            service.getServiceId(),
-                            service.getServiceName(),
-                            service.getBusinessId(),
-                            business.getBusinessName(),
-                            service.getPrice(),
-                            service.getServiceDescription(),
-                            distance
-                    );
-                })
-                .filter(
-                        (NearbyServiceDTO dto) ->
-                                dto != null
-                )
-                .filter(dto -> dto.getDistance() <= radiusKm)
-                .sorted((a, b) ->
-                        Double.compare(
-                                a.getDistance(),
-                                b.getDistance()
-                        ))
-                .limit(limit)
-                .collect(Collectors.toList());
+        return findNearbyServices(
+                location.getLatitude(),
+                location.getLongitude(),
+                radiusKm,
+                limit
+        );
     }
 
     @Override
@@ -249,10 +140,216 @@ public class NearbyServiceImpl implements NearbyService {
 
         Location location = userLocation.get();
 
-        double userLat = location.getLatitude();
-        double userLon = location.getLongitude();
+        return findNearbyReels(
+                location.getLatitude(),
+                location.getLongitude(),
+                radiusKm,
+                limit
+        );
+    }
 
-        return reelRepository.findAllFromBusinessesWithCoordinates()
+    // =========================================================
+    // ANONYMOUS / PUBLIC COORDINATE-BASED METHODS
+    // =========================================================
+
+    @Override
+    public List<NearbyBusinessDTO> findNearbyBusiness(
+            Double latitude,
+            Double longitude,
+            Double radiusKm,
+            int limit) {
+
+        if (!isValidCoordinates(latitude, longitude)) {
+            return List.of();
+        }
+
+        double safeRadius = normalizeRadius(radiusKm);
+        int safeLimit = normalizeLimit(limit);
+
+        return businessRepository.findAllWithCoordinates()
+                .stream()
+                .map(business -> {
+
+                    double distance =
+                            DistanceCalculator.calculateDistance(
+                                    latitude,
+                                    longitude,
+                                    business.getLatitude(),
+                                    business.getLongitude());
+
+                    return new NearbyBusinessDTO(
+                            business.getBusinessId(),
+                            business.getBusinessName(),
+                            business.getUserId(),
+                            business.getAddress(),
+                            business.getLatitude(),
+                            business.getLongitude(),
+                            distance,
+                            business.getMobileNumber());
+                })
+                .filter(dto -> dto.getDistance() <= safeRadius)
+                .sorted((a, b) ->
+                        Double.compare(
+                                a.getDistance(),
+                                b.getDistance()))
+                .limit(safeLimit)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<NearbyProductDTO> findNearbyProducts(
+            Double latitude,
+            Double longitude,
+            Double radiusKm,
+            int limit) {
+
+        if (!isValidCoordinates(latitude, longitude)) {
+            return List.of();
+        }
+
+        double safeRadius = normalizeRadius(radiusKm);
+        int safeLimit = normalizeLimit(limit);
+
+        return productRepository
+                .findAllWithBusinessCoordinates()
+                .stream()
+                .map(product -> {
+
+                    Business business =
+                            businessRepository
+                                    .findByBusinessId(
+                                            product.getBusinessId())
+                                    .orElse(null);
+
+                    if (business == null
+                            || business.getLatitude() == null
+                            || business.getLongitude() == null) {
+
+                        return null;
+                    }
+
+                    /*
+                     * CLOSED + hideProductsWhenClosed = true
+                     *
+                     * Product should not appear in nearby
+                     * discovery.
+                     */
+                    if (shouldHideProductsAndServices(business)) {
+                        return null;
+                    }
+
+                    double distance =
+                            DistanceCalculator.calculateDistance(
+                                    latitude,
+                                    longitude,
+                                    business.getLatitude(),
+                                    business.getLongitude());
+
+                    return new NearbyProductDTO(
+                            product.getProductId(),
+                            product.getProductName(),
+                            product.getBusinessId(),
+                            product.getProductPrice(),
+                            product.getProductDescription(),
+                            distance);
+                })
+                .filter(java.util.Objects::nonNull)
+                .filter(dto -> dto.getDistance() <= safeRadius)
+                .sorted((a, b) ->
+                        Double.compare(
+                                a.getDistance(),
+                                b.getDistance()))
+                .limit(safeLimit)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<NearbyServiceDTO> findNearbyServices(
+            Double latitude,
+            Double longitude,
+            Double radiusKm,
+            int limit) {
+
+        if (!isValidCoordinates(latitude, longitude)) {
+            return List.of();
+        }
+
+        double safeRadius = normalizeRadius(radiusKm);
+        int safeLimit = normalizeLimit(limit);
+
+        return serviceRepository
+                .findAllFromBusinessesWithCoordinates()
+                .stream()
+                .map(service -> {
+
+                    Business business =
+                            businessRepository
+                                    .findByBusinessId(
+                                            service.getBusinessId())
+                                    .orElse(null);
+
+                    if (business == null
+                            || business.getLatitude() == null
+                            || business.getLongitude() == null) {
+
+                        return null;
+                    }
+
+                    /*
+                     * CLOSED + hideProductsWhenClosed = true
+                     *
+                     * Service should not appear in nearby
+                     * discovery.
+                     */
+                    if (shouldHideProductsAndServices(business)) {
+                        return null;
+                    }
+
+                    double distance =
+                            DistanceCalculator.calculateDistance(
+                                    latitude,
+                                    longitude,
+                                    business.getLatitude(),
+                                    business.getLongitude());
+
+                    return new NearbyServiceDTO(
+                            service.getServiceId(),
+                            service.getServiceName(),
+                            service.getBusinessId(),
+                            business.getBusinessName(),
+                            service.getPrice(),
+                            service.getServiceDescription(),
+                            distance);
+                })
+                .filter(java.util.Objects::nonNull)
+                .filter(dto -> dto.getDistance() <= safeRadius)
+                .sorted((a, b) ->
+                        Double.compare(
+                                a.getDistance(),
+                                b.getDistance()))
+                .limit(safeLimit)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<NearbyReelDTO> findNearbyReels(
+            Double latitude,
+            Double longitude,
+            Double radiusKm,
+            int limit) {
+
+        if (!isValidCoordinates(latitude, longitude)) {
+            return List.of();
+        }
+
+        double safeRadius = normalizeRadius(radiusKm);
+        int safeLimit = normalizeLimit(limit);
+
+        /*
+         * Reels remain visible even when the business is CLOSED.
+         */
+        return reelRepository
+                .findAllFromBusinessesWithCoordinates()
                 .stream()
                 .map(reel -> {
 
@@ -275,28 +372,74 @@ public class NearbyServiceImpl implements NearbyService {
 
                     double distance =
                             DistanceCalculator.calculateDistance(
-                                    userLat,
-                                    userLon,
+                                    latitude,
+                                    longitude,
                                     business.getLatitude(),
-                                    business.getLongitude()
-                            );
+                                    business.getLongitude());
 
                     return new NearbyReelDTO(
                             reel.getReelId(),
                             reel.getBusinessId(),
                             reel.getReelVideo(),
                             reel.getReelDescription(),
-                            distance
-                    );
+                            distance);
                 })
                 .filter(java.util.Objects::nonNull)
-                .filter(dto -> dto.getDistance() <= radiusKm)
+                .filter(dto -> dto.getDistance() <= safeRadius)
                 .sorted((a, b) ->
                         Double.compare(
                                 a.getDistance(),
-                                b.getDistance()
-                        ))
-                .limit(limit)
+                                b.getDistance()))
+                .limit(safeLimit)
                 .collect(Collectors.toList());
+    }
+
+    // =========================================================
+    // CLOSED BUSINESS VISIBILITY
+    // =========================================================
+
+    private boolean shouldHideProductsAndServices(
+            Business business) {
+
+        return business.getBusinessStatus()
+                        == com.locato.enums.BusinessStatus.CLOSED
+                && Boolean.TRUE.equals(
+                        business.getHideProductsWhenClosed());
+    }
+
+    // =========================================================
+    // VALIDATION / NORMALIZATION
+    // =========================================================
+
+    private boolean isValidCoordinates(
+            Double latitude,
+            Double longitude) {
+
+        return latitude != null
+                && longitude != null
+                && latitude >= -90
+                && latitude <= 90
+                && longitude >= -180
+                && longitude <= 180;
+    }
+
+    private double normalizeRadius(
+            Double radiusKm) {
+
+        if (radiusKm == null || radiusKm <= 0) {
+            return 10.0;
+        }
+
+        return Math.min(radiusKm, 100.0);
+    }
+
+    private int normalizeLimit(
+            int limit) {
+
+        if (limit <= 0) {
+            return 20;
+        }
+
+        return Math.min(limit, 100);
     }
 }

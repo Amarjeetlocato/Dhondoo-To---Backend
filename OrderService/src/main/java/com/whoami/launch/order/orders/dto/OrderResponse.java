@@ -20,7 +20,31 @@ public class OrderResponse {
 
     private String customerId;
 
+    private String customerPhone;
+
     private String businessId;
+
+    private String businessName;
+
+    private String businessLogo;
+
+    private String businessBanner;
+
+    private String businessPhone;
+
+    private String businessAddress;
+
+    private Double businessLat;
+
+    private Double businessLng;
+
+    private Double customerLat;
+
+    private Double customerLng;
+
+    private String fulfillmentType;
+
+    private BigDecimal deliveryFee;
 
     private OrderStatus status;
 
@@ -29,6 +53,24 @@ public class OrderResponse {
     private String customerNote;
 
     private String deliveryAddress;
+
+    private String deliveryPartner;
+
+    private String trackingId;
+
+    private String deliveryStatus;
+
+    private String deliveryBoyName;
+
+    private String deliveryBoyPhone;
+
+    private Double deliveryBoyLat;
+
+    private Double deliveryBoyLng;
+
+    private String estimatedDeliveryTime;
+
+    private String dispatchApiUrl;
 
     private LocalDateTime createdAt;
 

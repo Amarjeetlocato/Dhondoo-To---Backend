@@ -36,9 +36,14 @@ public class BusinessResponseDTO {
     private BusinessStatus status;
 
     private Boolean acceptingOrders;
+
+    private Boolean hideProductsWhenClosed;
+
     private Boolean autoMode;
 
     private LocalTime openingTime;
     private LocalTime closingTime;
-}
 
+    private Boolean verified;
+    private Boolean subscriptionActive;
+}

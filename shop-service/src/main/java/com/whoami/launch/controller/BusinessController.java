@@ -19,6 +19,7 @@ import com.whoami.launch.dto.BusinessResponseDTO;
 import com.whoami.launch.dto.BusinessStatusUpdateRequest;
 import com.whoami.launch.dto.BusinessSummaryDTO;
 import com.whoami.launch.dto.FollowBusinessResponse;
+import com.whoami.launch.dto.ReviewResponse;
 import com.whoami.launch.entity.Business;
 import com.whoami.launch.exception.ResourceNotFoundException;
 import com.whoami.launch.service.BusinessService;
@@ -27,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/businesses")
+@RequestMapping({"/api/businesses", "/api/shops"})
 public class BusinessController {
 
     private final BusinessService businessService;
@@ -182,6 +183,32 @@ public class BusinessController {
                         response));
     }
 
+    @PostMapping("/{businessId}/change-request")
+    public ResponseEntity<ApiResponse<String>> requestBusinessDetailsChange(
+            @PathVariable String businessId,
+            @RequestBody Business changeDetails) {
+
+        businessService.requestBusinessDetailsChange(
+                businessId,
+                changeDetails);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Business details change request submitted successfully and is pending approval",
+                        businessId));
+    }
+
+    @GetMapping({"/{shopId}/reviews", "/{shopId}/reviews/list"})
+    public ResponseEntity<ApiResponse<List<ReviewResponse>>> getShopReviews(
+            @PathVariable String shopId) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Shop reviews fetched",
+                        new java.util.ArrayList<>()
+                )
+        );
+    }
+
     @GetMapping("/internal-api/businesses/{businessId}")
     public ResponseEntity<ApiResponse<BusinessResponseDTO>>
     getInternalBusinessById(
@@ -251,4 +278,21 @@ public class BusinessController {
                         "Check completed",
                         exists));
     }
+    
+    
+    		@PostMapping("/{businessId}/verification/request")
+    		public ResponseEntity<ApiResponse<Void>> requestVerification(
+    		        @PathVariable String businessId) {
+
+    		    businessService.requestVerification(businessId);
+
+    		    return ResponseEntity.ok(
+    		            ApiResponse.success(
+    		                    "Business verification request submitted",
+    		                    null
+    		            )
+    		    );
+    		}
+    		
+
 }

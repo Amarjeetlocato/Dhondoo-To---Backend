@@ -1,7 +1,7 @@
 package com.locato.constants.events.businessoperation;
 
 public enum BusinessOperationEventType {
-
+	APPLICATION_CREATION_REQUESTED,
     APPLICATION_CREATED,
     APPLICATION_SUBMITTED,
 

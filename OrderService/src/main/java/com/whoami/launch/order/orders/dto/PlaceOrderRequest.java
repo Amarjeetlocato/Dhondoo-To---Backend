@@ -4,10 +4,17 @@ import jakarta.validation.constraints.NotBlank;
 
 public class PlaceOrderRequest {
 
-    @NotBlank(message = "Delivery address is required")
     private String deliveryAddress;
 
     private String customerNote;
+
+    private String fulfillmentType; // "HOME_DELIVERY" or "SELF_PICKUP"
+
+    private java.math.BigDecimal deliveryFee;
+
+    private Double customerLat;
+
+    private Double customerLng;
 
     public String getDeliveryAddress() {
         return deliveryAddress;
@@ -23,5 +30,37 @@ public class PlaceOrderRequest {
 
     public void setCustomerNote(String customerNote) {
         this.customerNote = customerNote;
+    }
+
+    public String getFulfillmentType() {
+        return fulfillmentType;
+    }
+
+    public void setFulfillmentType(String fulfillmentType) {
+        this.fulfillmentType = fulfillmentType;
+    }
+
+    public java.math.BigDecimal getDeliveryFee() {
+        return deliveryFee;
+    }
+
+    public void setDeliveryFee(java.math.BigDecimal deliveryFee) {
+        this.deliveryFee = deliveryFee;
+    }
+
+    public Double getCustomerLat() {
+        return customerLat;
+    }
+
+    public void setCustomerLat(Double customerLat) {
+        this.customerLat = customerLat;
+    }
+
+    public Double getCustomerLng() {
+        return customerLng;
+    }
+
+    public void setCustomerLng(Double customerLng) {
+        this.customerLng = customerLng;
     }
 }
