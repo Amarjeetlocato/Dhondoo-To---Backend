@@ -1,32 +1,21 @@
 name: Dhondoo Backend CI
-
 on:
   push:
     branches:
       - main
-
   pull_request:
     branches:
       - main
-
 permissions:
   contents: write
   packages: write
-
 env:
   REGISTRY: docker.io
   DOCKERHUB_USERNAME: whomaiamar
   IMAGE_TAG: ${{ github.sha }}
-
 jobs:
-
-  ################################################################################
-  # Detect Changed Services
-  ################################################################################
-
   detect-changes:
     runs-on: ubuntu-latest
-
     outputs:
       gateway: ${{ steps.detect.outputs.gateway }}
       userRegistry: ${{ steps.detect.outputs.userRegistry }}
@@ -35,169 +24,113 @@ jobs:
       notificationService: ${{ steps.detect.outputs.notificationService }}
       servicechat: ${{ steps.detect.outputs.servicechat }}
       serviceRegistry: ${{ steps.detect.outputs.serviceRegistry }}
+      billingService: ${{ steps.detect.outputs.billingService }}
+      businessOperationService: ${{ steps.detect.outputs.businessOperationService }}
       shared: ${{ steps.detect.outputs.shared }}
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Detect Changed Services
         id: detect
         uses: ./.github/actions/detect-changes
-
-  ################################################################################
-  # Gateway
-  ################################################################################
-
   gateway:
     needs: detect-changes
-
-    if: |
-      needs.detect-changes.outputs.gateway == 'true' ||
-      needs.detect-changes.outputs.shared == 'true'
-
+    if: needs.detect-changes.outputs.gateway == 'true' || needs.detect-changes.outputs.shared == 'true'
     uses: ./.github/workflows/reusable-build.yml
-
     with:
       module: Gateway
       image-name: gateway
       gitops-service: gateway
       dockerfile: Gateway/Dockerfile
       image-tag: ${{ github.sha }}
-
     secrets: inherit
-
-  ################################################################################
-  # User Registry
-  ################################################################################
-
   userRegistry:
     needs: detect-changes
-
-    if: |
-      needs.detect-changes.outputs.userRegistry == 'true' ||
-      needs.detect-changes.outputs.shared == 'true'
-
+    if: needs.detect-changes.outputs.userRegistry == 'true' || needs.detect-changes.outputs.shared == 'true'
     uses: ./.github/workflows/reusable-build.yml
-
     with:
       module: userRegistry
       image-name: user-registry
       gitops-service: user-service
       dockerfile: userRegistry/Dockerfile
       image-tag: ${{ github.sha }}
-
     secrets: inherit
-
-  ################################################################################
-  # Shop Service
-  ################################################################################
-
   shopService:
     needs: detect-changes
-
-    if: |
-      needs.detect-changes.outputs.shopService == 'true' ||
-      needs.detect-changes.outputs.shared == 'true'
-
+    if: needs.detect-changes.outputs.shopService == 'true' || needs.detect-changes.outputs.shared == 'true'
     uses: ./.github/workflows/reusable-build.yml
-
     with:
       module: shop-service
       image-name: shop-service
       gitops-service: shop-service
       dockerfile: shop-service/Dockerfile
       image-tag: ${{ github.sha }}
-
     secrets: inherit
-
-  ################################################################################
-  # Order Service
-  ################################################################################
-
   orderService:
     needs: detect-changes
-
-    if: |
-      needs.detect-changes.outputs.orderService == 'true' ||
-      needs.detect-changes.outputs.shared == 'true'
-
+    if: needs.detect-changes.outputs.orderService == 'true' || needs.detect-changes.outputs.shared == 'true'
     uses: ./.github/workflows/reusable-build.yml
-
     with:
       module: OrderService
       image-name: order-service
       gitops-service: order-service
       dockerfile: OrderService/Dockerfile
       image-tag: ${{ github.sha }}
-
     secrets: inherit
-
-  ################################################################################
-  # Notification Service
-  ################################################################################
-
   notificationService:
     needs: detect-changes
-
-    if: |
-      needs.detect-changes.outputs.notificationService == 'true' ||
-      needs.detect-changes.outputs.shared == 'true'
-
+    if: needs.detect-changes.outputs.notificationService == 'true' || needs.detect-changes.outputs.shared == 'true'
     uses: ./.github/workflows/reusable-build.yml
-
     with:
       module: Notification-Service
       image-name: notification-service
       gitops-service: notification-service
       dockerfile: Notification-Service/Dockerfile
       image-tag: ${{ github.sha }}
-
     secrets: inherit
-
-  ################################################################################
-  # Chat Service
-  ################################################################################
-
   servicechat:
     needs: detect-changes
-
-    if: |
-      needs.detect-changes.outputs.servicechat == 'true' ||
-      needs.detect-changes.outputs.shared == 'true'
-
+    if: needs.detect-changes.outputs.servicechat == 'true' || needs.detect-changes.outputs.shared == 'true'
     uses: ./.github/workflows/reusable-build.yml
-
     with:
       module: Servicechat
       image-name: chat-service
       gitops-service: chat-service
       dockerfile: Servicechat/Dockerfile
       image-tag: ${{ github.sha }}
-
     secrets: inherit
-
-  ################################################################################
-  # Service Registry
-  ################################################################################
-
   serviceRegistry:
     needs: detect-changes
-
-    if: |
-      needs.detect-changes.outputs.serviceRegistry == 'true' ||
-      needs.detect-changes.outputs.shared == 'true'
-
+    if: needs.detect-changes.outputs.serviceRegistry == 'true' || needs.detect-changes.outputs.shared == 'true'
     uses: ./.github/workflows/reusable-build.yml
-
     with:
       module: service-registry
       image-name: service-registry
       gitops-service: service-registry
       dockerfile: service-registry/Dockerfile
       image-tag: ${{ github.sha }}
-
     secrets: inherit
-
+  billingService:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.billingService == 'true' || needs.detect-changes.outputs.shared == 'true'
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      module: BillingService
+      image-name: billing-service
+      gitops-service: billing-service
+      dockerfile: BillingService/Dockerfile
+      image-tag: ${{ github.sha }}
+    secrets: inherit
+  businessOperationService:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.businessOperationService == 'true' || needs.detect-changes.outputs.shared == 'true'
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      module: BusinessOperationService
+      image-name: business-operation-service
+      gitops-service: business-operation-service
+      dockerfile: BusinessOperationService/Dockerfile
+      image-tag: ${{ github.sha }}
+    secrets: inherit
