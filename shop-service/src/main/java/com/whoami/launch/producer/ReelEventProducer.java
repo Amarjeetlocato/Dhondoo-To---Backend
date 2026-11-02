@@ -59,7 +59,7 @@ public class ReelEventProducer {
                         req.put("sendPush", true);
                         req.put("deepLink", "/shop/account");
 
-                        restTemplate.postForEntity("http://notification-service.platform.svc.cluster.local:8087/api/notifications/internal-api/notifications", req, java.util.Map.class);
+                        restTemplate.postForEntity("http://notification-service-notification-service.platform.svc.cluster.local:8087/api/notifications/internal-api/notifications", req, java.util.Map.class);
                         log.info("Sent Reel Created notification via REST for userId={}", event.getUserId());
                     } catch (Exception ne) {
                         log.warn("Could not send direct reel notification via REST: {}", ne.getMessage());
