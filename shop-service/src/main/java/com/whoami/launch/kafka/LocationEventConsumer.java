@@ -18,7 +18,7 @@ public class LocationEventConsumer {
 
     @KafkaListener(
             topics = "location-events",
-            groupId = "shop-group",
+            groupId = "shop-location-group",
             containerFactory = "locationKafkaListenerContainerFactory"
     )
     @Transactional

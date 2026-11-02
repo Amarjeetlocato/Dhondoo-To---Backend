@@ -128,7 +128,7 @@ public class ShopKafkaProducer {
                         req.put("sendPush", true);
                         req.put("deepLink", "/shop/account");
 
-                        restTemplate.postForEntity("http://localhost:8087/api/notifications/internal-api/notifications", req, java.util.Map.class);
+                        restTemplate.postForEntity("http://notification-service.platform.svc.cluster.local:8087/api/notifications/internal-api/notifications", req, java.util.Map.class);
                         log.info("Sent Shop Created notification via REST fallback to Notification-Service for userId={}", business.getUserId());
                     } catch (Exception ne) {
                         log.warn("Direct notification REST fallback warning for userId={}: {}", business.getUserId(), ne.getMessage());

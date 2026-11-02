@@ -20,7 +20,7 @@ public class CustomerProfileEventConsumer {
 
     @KafkaListener(
             topics = "customer-events",
-            groupId = "shop-group",
+            groupId = "shop-customer-group",
             containerFactory = "kafkaListenerContainerFactory"
     )
     @Transactional
