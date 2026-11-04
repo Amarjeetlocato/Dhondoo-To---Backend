@@ -52,6 +52,10 @@ public class SecurityConfig {
                             "/admin/auth/refresh"
                     ).permitAll()
 
+                    .requestMatchers(
+                            "/actuator/health",
+                            "/actuator/health/**"
+                    ).permitAll()
                     .requestMatchers("/admin/**", "/api/admin/**")
                     .hasRole("ADMIN")
 
