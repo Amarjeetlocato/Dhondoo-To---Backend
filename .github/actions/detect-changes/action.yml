@@ -19,6 +19,8 @@ outputs:
     value: ${{ steps.filter.outputs.billingService }}
   businessOperationService:
     value: ${{ steps.filter.outputs.businessOperationService }}
+  superuserService:
+    value: ${{ steps.filter.outputs.superuserService }}
   shared:
     value: ${{ steps.filter.outputs.shared }}
 runs:
@@ -47,6 +49,8 @@ runs:
             - 'BillingService/**'
           businessOperationService:
             - 'BusinessOperationService/**'
+          superuserService:
+            - 'SuperUSer/**'
           shared:
             - 'Locato-constants/**'
             - 'pom.xml'

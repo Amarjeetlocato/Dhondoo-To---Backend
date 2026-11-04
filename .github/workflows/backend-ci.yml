@@ -26,6 +26,7 @@ jobs:
       serviceRegistry: ${{ steps.detect.outputs.serviceRegistry }}
       billingService: ${{ steps.detect.outputs.billingService }}
       businessOperationService: ${{ steps.detect.outputs.businessOperationService }}
+      superuserService: ${{ steps.detect.outputs.superuserService }}
       shared: ${{ steps.detect.outputs.shared }}
     steps:
       - name: Checkout Repository
@@ -132,5 +133,16 @@ jobs:
       image-name: business-operation-service
       gitops-service: business-operation-service
       dockerfile: BusinessOperationService/Dockerfile
+      image-tag: ${{ github.sha }}
+    secrets: inherit
+  superuserService:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.superuserService == 'true' || needs.detect-changes.outputs.shared == 'true'
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      module: SuperUSer
+      image-name: superuser-service
+      gitops-service: superuser-service
+      dockerfile: SuperUSer/Dockerfile
       image-tag: ${{ github.sha }}
     secrets: inherit
