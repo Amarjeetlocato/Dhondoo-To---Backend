@@ -4,12 +4,13 @@ public enum OrderStatus {
 
     REQUESTED,
     ACCEPTED,
-    REJECTED,
+    PAYMENT_CONFIRMED,
     PREPARING,
     READY,
     DISPATCHED,
     OUT_FOR_DELIVERY,
     DELIVERED,
+    REJECTED,
     CANCELLED
 
 }

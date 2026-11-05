@@ -60,6 +60,11 @@ public class BusinessResponseDTO {
     private Long followerCount;
     private LocalDateTime createdAt;
 
+    private String upiId;
+    private java.util.List<String> paymentQrCodes;
+    private String paymentNotes;
+    private Object socialLinks;
+
     // Helper compatibility getters/setters
     public String getShopId() {
         return shopId != null ? shopId : businessId;

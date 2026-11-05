@@ -6,15 +6,7 @@ import java.util.UUID;
 import com.locato.enums.BusinessStatus;
 import com.locato.enums.BusinessType;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -163,6 +155,22 @@ public class Business {
     private LocalTime openingTime;
 
     private LocalTime closingTime;
+
+    /**
+     * Payment & Social Media details
+     */
+    private String upiId;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "business_payment_qr_codes", joinColumns = @JoinColumn(name = "business_id"))
+    @Column(name = "qr_code_url", length = 1000)
+    private java.util.List<String> paymentQrCodes = new java.util.ArrayList<>();
+
+    @Column(length = 1000)
+    private String paymentNotes;
+
+    @Column(length = 4000)
+    private String socialLinks;
 
     /**
      * Generate business identity automatically.

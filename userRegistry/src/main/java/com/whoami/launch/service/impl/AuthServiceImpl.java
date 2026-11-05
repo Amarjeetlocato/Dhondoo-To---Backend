@@ -13,14 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.locato.constants.events.EventSources;
-import com.locato.constants.events.EventVersions;
-import com.locato.constants.events.customer.CustomerEventType;
-import com.locato.constants.events.customer.CustomerProfileCreatedEvent;
-import com.locato.constants.events.location.LocationCreatedEvent;
-import com.locato.constants.events.location.LocationEventType;
-import com.locato.constants.events.user.UserCreatedEvent;
-import com.locato.constants.events.user.UserEventType;
+import com.locato.dto.UserCreatedEvent;
 import com.locato.constants.topics.KafkaTopics;
 import com.whoami.launch.dto.ApiResponse;
 import com.whoami.launch.dto.JwtResponse;
@@ -309,18 +302,12 @@ public class AuthServiceImpl implements AuthService {
     private void publishUserCreatedEvent(User user) {
         java.util.concurrent.CompletableFuture.runAsync(() -> {
             try {
-                UserCreatedEvent event =
-                        UserCreatedEvent.builder()
-                                .eventId(UUID.randomUUID())
-                                .eventType(UserEventType.USER_CREATED)
-                                .eventVersion(EventVersions.V1)
-                                .source(EventSources.USER_REGISTRY)
-                                .occurredAt(LocalDateTime.now())
-                                .correlationId(null)
-                                .userId(user.getUserId())
-                                .fullName(user.getFullName())
-                                .email(user.getEmail())
-                                .build();
+                UserCreatedEvent event = UserCreatedEvent.builder()
+                        .userId(user.getUserId())
+                        .name(user.getFullName())
+                        .email(user.getEmail())
+                        .createdAt(LocalDateTime.now())
+                        .build();
 
                 kafkaTemplate.send(
                         KafkaTopics.USER_EVENTS,
@@ -334,58 +321,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void publishCustomerProfileCreatedEvent(User user) {
-        java.util.concurrent.CompletableFuture.runAsync(() -> {
-            try {
-                CustomerProfileCreatedEvent event =
-                        CustomerProfileCreatedEvent.builder()
-                                .eventId(UUID.randomUUID())
-                                .eventType(
-                                        CustomerEventType.CUSTOMER_PROFILE_CREATED
-                                )
-                                .eventVersion(EventVersions.V1)
-                                .source(EventSources.USER_REGISTRY)
-                                .occurredAt(LocalDateTime.now())
-                                .correlationId(null)
-                                .userId(user.getUserId())
-                                .customerId(null)
-                                .fullName(user.getFullName())
-                                .email(user.getEmail())
-                                .build();
-
-                kafkaTemplate.send(
-                        KafkaTopics.CUSTOMER_EVENTS,
-                        user.getUserId(),
-                        event
-                );
-            } catch (Exception e) {
-                logger.error("Failed to publish CustomerProfileCreatedEvent for userId={}: {}", user.getUserId(), e.getMessage());
-            }
-        });
+        // Handled via user registration pipeline
     }
 
     private void publishLocationCreatedEvent(User user) {
-        java.util.concurrent.CompletableFuture.runAsync(() -> {
-            try {
-                LocationCreatedEvent event =
-                        LocationCreatedEvent.builder()
-                                .eventId(UUID.randomUUID())
-                                .eventType(LocationEventType.LOCATION_CREATED)
-                                .eventVersion(EventVersions.V1)
-                                .source(EventSources.USER_REGISTRY)
-                                .occurredAt(LocalDateTime.now())
-                                .correlationId(null)
-                                .userId(user.getUserId())
-                                .build();
-
-                kafkaTemplate.send(
-                        KafkaTopics.LOCATION_EVENTS,
-                        user.getUserId(),
-                        event
-                );
-            } catch (Exception e) {
-                logger.error("Failed to publish LocationCreatedEvent for userId={}: {}", user.getUserId(), e.getMessage());
-            }
-        });
+        // Handled via user registration pipeline
     }
 
     private void doAuthenticate(

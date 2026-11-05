@@ -342,6 +342,12 @@ public class OrderServiceImpl implements OrderService {
                         "Your order has been accepted by the business.";
                 break;
 
+            case PAYMENT_CONFIRMED:
+                title = "Payment Confirmed 💳";
+                message =
+                        "Shopkeeper confirmed your payment. Order is now moving to preparation!";
+                break;
+
             case REJECTED:
                 title = "Order Rejected";
                 message =
@@ -358,6 +364,18 @@ public class OrderServiceImpl implements OrderService {
                 title = "Order Ready";
                 message =
                         "Your order is ready.";
+                break;
+
+            case DISPATCHED:
+                title = "Order Dispatched 🛵";
+                message =
+                        "Your order has been dispatched by the shopkeeper.";
+                break;
+
+            case OUT_FOR_DELIVERY:
+                title = "Out for Delivery 🛵";
+                message =
+                        "Your order is out for delivery to your address.";
                 break;
 
             case DELIVERED:

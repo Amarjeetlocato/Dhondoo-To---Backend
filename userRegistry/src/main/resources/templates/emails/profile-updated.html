@@ -1,27 +1,19 @@
 <!DOCTYPE html>
-<html>
-<body>
-
-<h2>Password Updated Successfully 🔐</h2>
-
-<p>Hello <span th:text="${name}"></span>,</p>
-
-<p>
-Your password has been changed successfully.
-</p>
-
-<p>
-If you made this change, no action is required.
-</p>
-
-<p>
-If you did not make this change, please contact support immediately and secure your account.
-</p>
-
-<p>
-Regards,<br>
-Team Launch
-</p>
-
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile Updated - Dhondoo To</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #1A237E; color: #ffffff; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h2 style="margin: 0;">Profile Updated ✨</h2>
+    </div>
+    <div style="border: 1px solid #ddd; padding: 25px; border-radius: 0 0 8px 8px; background-color: #ffffff;">
+        <p>Hello <strong th:text="${name}">User</strong>,</p>
+        <p>Your profile information on <strong>Dhondoo To</strong> has been updated successfully.</p>
+        <p>If you made these changes, no further action is required.</p>
+        <br>
+        <p>Regards,<br><strong>Dhondoo To Team</strong></p>
+    </div>
 </body>
 </html>

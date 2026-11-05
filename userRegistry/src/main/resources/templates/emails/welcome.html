@@ -1,30 +1,20 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Welcome</title>
+    <meta charset="UTF-8">
+    <title>Welcome to Dhondoo To</title>
 </head>
-<body>
-
-<h2>Welcome to Locato by mynear 🎉</h2>
-
-<p>Hello <span th:text="${name}"></span>,</p>
-
-<p>
-    Your account has been successfully created and verified.
-</p>
-
-<p>
-    You can now explore shops, products, services and much more.
-</p>
-
-<p>
-    Thank you for joining us.
-</p>
-
-<p>
-    Regards,<br>
-    Team Locato by mynear.shop
-</p>
-
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #1A237E; color: #ffffff; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0;">Welcome to Dhondoo To 🎉</h1>
+    </div>
+    <div style="border: 1px solid #ddd; padding: 25px; border-radius: 0 0 8px 8px; background-color: #ffffff;">
+        <p>Hello <strong th:text="${name}">User</strong>,</p>
+        <p>Your account has been successfully created and verified on <strong>Dhondoo To</strong>.</p>
+        <p>You can now explore local shops, products, services, reels, and much more in your area.</p>
+        <p>Thank you for joining us!</p>
+        <br>
+        <p>Regards,<br><strong>Dhondoo To Team</strong></p>
+    </div>
 </body>
 </html>

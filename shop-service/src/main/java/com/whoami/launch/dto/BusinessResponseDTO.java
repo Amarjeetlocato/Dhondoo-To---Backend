@@ -46,4 +46,9 @@ public class BusinessResponseDTO {
 
     private Boolean verified;
     private Boolean subscriptionActive;
+
+    private String upiId;
+    private java.util.List<String> paymentQrCodes;
+    private String paymentNotes;
+    private Object socialLinks;
 }

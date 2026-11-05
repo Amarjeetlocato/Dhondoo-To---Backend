@@ -200,6 +200,26 @@ public class BusinessServiceImpl implements BusinessService {
                     businessDetails.getClosingTime());
         }
 
+        if (businessDetails.getUpiId() != null) {
+            existingBusiness.setUpiId(
+                    businessDetails.getUpiId());
+        }
+
+        if (businessDetails.getPaymentQrCodes() != null) {
+            existingBusiness.setPaymentQrCodes(
+                    businessDetails.getPaymentQrCodes());
+        }
+
+        if (businessDetails.getPaymentNotes() != null) {
+            existingBusiness.setPaymentNotes(
+                    businessDetails.getPaymentNotes());
+        }
+
+        if (businessDetails.getSocialLinks() != null) {
+            existingBusiness.setSocialLinks(
+                    businessDetails.getSocialLinks());
+        }
+
         Business savedBusiness =
                 businessRepository.save(existingBusiness);
 
@@ -316,7 +336,11 @@ public class BusinessServiceImpl implements BusinessService {
                 business.getOpeningTime(),
                 business.getClosingTime(),
                 isVerified,
-                isSubscriptionActive);
+                isSubscriptionActive,
+                business.getUpiId(),
+                business.getPaymentQrCodes(),
+                business.getPaymentNotes(),
+                business.getSocialLinks());
     }
 
     @Override

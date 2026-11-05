@@ -1,23 +1,19 @@
 <!DOCTYPE html>
-<html>
-<body>
-
-<h2>Welcome Back 🎉</h2>
-
-<p>Hello <span th:text="${name}"></span>,</p>
-
-<p>
-Your account has been reactivated successfully.
-</p>
-
-<p>
-You can now continue using all Launch features.
-</p>
-
-<p>
-Regards,<br>
-Team Launch
-</p>
-
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome Back - Dhondoo To</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #1A237E; color: #ffffff; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h2 style="margin: 0;">Welcome Back 🎉</h2>
+    </div>
+    <div style="border: 1px solid #ddd; padding: 25px; border-radius: 0 0 8px 8px; background-color: #ffffff;">
+        <p>Hello <strong th:text="${name}">User</strong>,</p>
+        <p>Your <strong>Dhondoo To</strong> account has been reactivated successfully.</p>
+        <p>You can now continue exploring local shops, products, and services.</p>
+        <br>
+        <p>Regards,<br><strong>Dhondoo To Team</strong></p>
+    </div>
 </body>
 </html>

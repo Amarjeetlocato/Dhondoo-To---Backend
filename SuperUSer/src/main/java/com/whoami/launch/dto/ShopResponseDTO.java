@@ -41,4 +41,9 @@ public class ShopResponseDTO {
 
     private LocalTime openingTime;
     private LocalTime closingTime;
+
+    private String upiId;
+    private java.util.List<String> paymentQrCodes;
+    private String paymentNotes;
+    private Object socialLinks;
 }
