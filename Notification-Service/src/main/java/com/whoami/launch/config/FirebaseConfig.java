@@ -23,10 +23,20 @@ public class FirebaseConfig {
         }
 
         try {
+            InputStream is = null;
             ClassPathResource resource = new ClassPathResource("firebase-config.json");
             if (resource.exists()) {
-                try (InputStream is = resource.getInputStream()) {
-                    GoogleCredentials credentials = GoogleCredentials.fromStream(is);
+                is = resource.getInputStream();
+            } else {
+                java.io.File externalFile = new java.io.File("/app/firebase-config.json");
+                if (externalFile.exists()) {
+                    is = new java.io.FileInputStream(externalFile);
+                }
+            }
+
+            if (is != null) {
+                try (InputStream stream = is) {
+                    GoogleCredentials credentials = GoogleCredentials.fromStream(stream);
                     FirebaseOptions options = FirebaseOptions.builder()
                             .setCredentials(credentials)
                             .build();
