@@ -55,9 +55,7 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
                 // --------------------------------
                 // ACTUATOR / KUBERNETES HEALTH
                 // --------------------------------
-                path.equals("/actuator/health")
-                || path.equals("/actuator/health/liveness")
-                || path.equals("/actuator/health/readiness")
+                path.startsWith("/actuator/")
 
                 // --------------------------------
                 // AUTH APIs
@@ -71,9 +69,10 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
                 || path.equals("/api/auth/refresh")
 
                 // --------------------------------
-                // PUBLIC HEALTH
+                // PUBLIC HEALTH & SHORT / SHARE LINKS
                 // --------------------------------
                 || path.equals("/public/health")
+                || path.startsWith("/s/")
 
                 // --------------------------------
                 // ADMIN AUTH
@@ -98,6 +97,7 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
                     || path.startsWith("/api/business-verifications/")
                     || path.startsWith("/api/billing/")
                     || path.startsWith("/internal/")
+                    || path.startsWith("/s/")
                    ))
         ) {
 
