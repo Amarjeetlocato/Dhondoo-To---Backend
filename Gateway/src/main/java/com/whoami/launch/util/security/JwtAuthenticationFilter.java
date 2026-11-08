@@ -69,10 +69,12 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
                 || path.equals("/api/auth/refresh")
 
                 // --------------------------------
-                // PUBLIC HEALTH & SHORT / SHARE LINKS
+                // PUBLIC HEALTH, SHORT LINKS & BUSINESS OPERATIONS
                 // --------------------------------
                 || path.equals("/public/health")
                 || path.startsWith("/s/")
+                || path.startsWith("/api/business-operations/")
+                || path.startsWith("/api/business-verifications/")
 
                 // --------------------------------
                 // ADMIN AUTH
@@ -93,8 +95,6 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
                     || path.startsWith("/api/reels")
                     || path.startsWith("/api/businesses")
                     || path.startsWith("/api/shops")
-                    || path.startsWith("/api/business-operations/")
-                    || path.startsWith("/api/business-verifications/")
                     || path.startsWith("/api/billing/")
                     || path.startsWith("/internal/")
                     || path.startsWith("/s/")
