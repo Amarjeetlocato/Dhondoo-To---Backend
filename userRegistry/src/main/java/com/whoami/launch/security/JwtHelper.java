@@ -26,7 +26,11 @@ public class JwtHelper {
     private long refreshExpiration;
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        String keyToUse = secret;
+        if (keyToUse == null || keyToUse.trim().getBytes(java.nio.charset.StandardCharsets.UTF_8).length < 32) {
+            keyToUse = "afafasfafafasfasfasfafacasdasfasxASFACASDFACASDFASFASFDAFASFASDAADSCSDFADCVSGCFVADXCcadwavfsfarvf";
+        }
+        return Keys.hmacShaKeyFor(keyToUse.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 
     /*
