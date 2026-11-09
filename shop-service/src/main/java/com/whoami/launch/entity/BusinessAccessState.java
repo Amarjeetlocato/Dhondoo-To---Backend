@@ -29,6 +29,8 @@ public class BusinessAccessState {
     private boolean verified = false;
     @Column(nullable = false)
     private boolean subscriptionActive = false;
+    @Column(nullable = false)
+    private boolean paymentCompleted = false;
     @PrePersist
     protected void prePersist() {
         if (accessStateId == null) {

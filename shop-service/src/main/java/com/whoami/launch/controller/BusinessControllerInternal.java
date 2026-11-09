@@ -75,7 +75,7 @@ public class BusinessControllerInternal {
         boolean stateChanged = false;
 
         // Dynamic sync 1: Check verification status from BusinessOperationService if not yet verified
-        if (!state.isVerified()) {
+        if (!state.isVerified() || !state.isPaymentCompleted()) {
             try {
                 String verifUrl = "http://localhost:8090/api/business-operations/verifications/" + businessId;
                 ResponseEntity<java.util.Map> verifRes = restTemplate.getForEntity(verifUrl, java.util.Map.class);
@@ -83,8 +83,13 @@ public class BusinessControllerInternal {
                     String status = (String) verifRes.getBody().get("verificationStatus");
                     if ("VERIFICATION_APPROVED".equalsIgnoreCase(status) || "APPROVED".equalsIgnoreCase(status)) {
                         state.setVerified(true);
+                        state.setPaymentCompleted(true);
                         stateChanged = true;
                         log.info("Auto-synced verification status to true for businessId={}", businessId);
+                    } else if ("PAYMENT_COMPLETED".equalsIgnoreCase(status) || "VIDEO_SUBMITTED".equalsIgnoreCase(status) || "VIDEO_ADMIN_UNDER_REVIEW".equalsIgnoreCase(status) || "ADMIN_UNDER_REVIEW".equalsIgnoreCase(status)) {
+                        state.setPaymentCompleted(true);
+                        stateChanged = true;
+                        log.info("Auto-synced paymentCompleted status to true for businessId={}", businessId);
                     }
                 }
             } catch (Exception e) {
@@ -120,6 +125,24 @@ public class BusinessControllerInternal {
         }
 
         return ResponseEntity.ok(state);
+    }
+
+    @PutMapping("/{businessId}/payment-status")
+    public ResponseEntity<BusinessAccessState> updatePaymentStatus(
+            @PathVariable String businessId,
+            @RequestParam boolean paymentCompleted) {
+
+        BusinessAccessState state = accessStateRepository.findByBusinessId(businessId)
+                .orElseGet(() -> {
+                    BusinessAccessState s = new BusinessAccessState();
+                    s.setBusinessId(businessId);
+                    return s;
+                });
+
+        state.setPaymentCompleted(paymentCompleted);
+        BusinessAccessState saved = accessStateRepository.save(state);
+        log.info("Updated payment status via REST for businessId={}, paymentCompleted={}", businessId, paymentCompleted);
+        return ResponseEntity.ok(saved);
     }
 
     @PutMapping("/{businessId}/verification-status")

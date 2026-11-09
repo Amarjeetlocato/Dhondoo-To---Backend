@@ -311,6 +311,7 @@ public class BusinessServiceImpl implements BusinessService {
 
         Boolean isVerified = accessState != null && accessState.isVerified();
         Boolean isSubscriptionActive = accessState != null && accessState.isSubscriptionActive();
+        Boolean isPaymentCompleted = accessState != null && accessState.isPaymentCompleted();
 
         return new BusinessResponseDTO(
                 business.getBusinessId(),
@@ -337,6 +338,7 @@ public class BusinessServiceImpl implements BusinessService {
                 business.getClosingTime(),
                 isVerified,
                 isSubscriptionActive,
+                isPaymentCompleted,
                 business.getUpiId(),
                 business.getPaymentQrCodes(),
                 business.getPaymentNotes(),
