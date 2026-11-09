@@ -21,22 +21,9 @@ public class CorsConfig {
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public CorsWebFilter corsWebFilter() {
-
         CorsConfiguration config = new CorsConfiguration();
 
-        if ("*".equals(allowedOrigins.trim())) {
-            config.addAllowedOriginPattern("*");
-        } else {
-            List<String> origins = Arrays.stream(allowedOrigins.split(","))
-                    .map(String::trim)
-                    .filter(origin -> !origin.isBlank())
-                    .toList();
-            for (String origin : origins) {
-                config.addAllowedOriginPattern(origin);
-            }
-            config.addAllowedOriginPattern("http://localhost:*");
-            config.addAllowedOriginPattern("http://127.0.0.1:*");
-        }
+        config.addAllowedOriginPattern("*");
 
         config.setAllowedMethods(
                 List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD")

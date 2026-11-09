@@ -43,7 +43,8 @@ public class JwtAuthenticationFilter implements WebFilter, Ordered {
         // ALLOW OPTIONS (CORS PREFLIGHT)
         // ====================================
         if ("OPTIONS".equalsIgnoreCase(method)) {
-            return chain.filter(exchange);
+            exchange.getResponse().setStatusCode(HttpStatus.OK);
+            return Mono.empty();
         }
 
         boolean isGet = "GET".equalsIgnoreCase(method);
