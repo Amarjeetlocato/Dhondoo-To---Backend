@@ -130,6 +130,12 @@ public class BusinessServiceImpl implements BusinessService {
             // Log kafka exception
         }
 
+        try {
+            syncBusinessChatProfile(savedBusiness);
+        } catch (Exception e) {
+            log.debug("Could not sync business chat profile: {}", e.getMessage());
+        }
+
         return savedBusiness;
     }
 
@@ -205,9 +211,19 @@ public class BusinessServiceImpl implements BusinessService {
                     businessDetails.getUpiId());
         }
 
-        if (businessDetails.getPaymentQrCodes() != null) {
-            existingBusiness.setPaymentQrCodes(
-                    businessDetails.getPaymentQrCodes());
+        if (businessDetails.getUpiId2() != null) {
+            existingBusiness.setUpiId2(
+                    businessDetails.getUpiId2());
+        }
+
+        if (businessDetails.getPaymentQrCode1Url() != null) {
+            existingBusiness.setPaymentQrCode1Url(
+                    businessDetails.getPaymentQrCode1Url());
+        }
+
+        if (businessDetails.getPaymentQrCode2Url() != null) {
+            existingBusiness.setPaymentQrCode2Url(
+                    businessDetails.getPaymentQrCode2Url());
         }
 
         if (businessDetails.getPaymentNotes() != null) {
@@ -241,7 +257,35 @@ public class BusinessServiceImpl implements BusinessService {
                     "Business details updated");
         }
 
+        try {
+            syncBusinessChatProfile(savedBusiness);
+        } catch (Exception e) {
+            log.debug("Could not sync business chat profile: {}", e.getMessage());
+        }
+
         return savedBusiness;
+    }
+
+    private void syncBusinessChatProfile(Business business) {
+        String[] chatHosts = {
+            "http://chat-service-chat-service.platform.svc.cluster.local:8085",
+            "http://chat-service:8085",
+            "http://localhost:8085"
+        };
+        java.util.Map<String, String> payload = new java.util.HashMap<>();
+        payload.put("businessId", business.getBusinessId());
+        payload.put("businessName", business.getBusinessName());
+        payload.put("imageUrl", business.getLogoUrl());
+
+        for (String host : chatHosts) {
+            try {
+                restTemplate.postForEntity(host + "/api/chat/businesses", payload, java.util.Map.class);
+                log.info("Synced business chat profile to Servicechat for businessId={}", business.getBusinessId());
+                break;
+            } catch (Exception e) {
+                log.debug("Chat service sync skipped at {}: {}", host, e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -340,7 +384,9 @@ public class BusinessServiceImpl implements BusinessService {
                 isSubscriptionActive,
                 isPaymentCompleted,
                 business.getUpiId(),
-                business.getPaymentQrCodes(),
+                business.getUpiId2(),
+                business.getPaymentQrCode1Url(),
+                business.getPaymentQrCode2Url(),
                 business.getPaymentNotes(),
                 business.getSocialLinks());
     }

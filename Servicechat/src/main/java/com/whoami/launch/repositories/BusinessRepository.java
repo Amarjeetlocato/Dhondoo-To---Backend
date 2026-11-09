@@ -8,4 +8,5 @@ import com.whoami.launch.entities.Business;
 @Repository
 public interface BusinessRepository
         extends JpaRepository<Business, Long> {
+    java.util.Optional<Business> findByBusinessId(String businessId);
 }

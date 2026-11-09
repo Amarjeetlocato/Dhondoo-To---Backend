@@ -53,6 +53,24 @@ public class BusinessController {
                         ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/{businessId}/payment-methods")
+    public ResponseEntity<java.util.Map<String, Object>> getPaymentMethods(
+            @PathVariable String businessId) {
+
+        return businessService.getBusinessById(businessId)
+                .map(b -> {
+                    java.util.Map<String, Object> res = new java.util.HashMap<>();
+                    res.put("businessId", b.getBusinessId());
+                    res.put("upiId", b.getUpiId());
+                    res.put("upiId2", b.getUpiId2());
+                    res.put("paymentQrCode1Url", b.getPaymentQrCode1Url());
+                    res.put("paymentQrCode2Url", b.getPaymentQrCode2Url());
+                    res.put("paymentNotes", b.getPaymentNotes());
+                    return ResponseEntity.ok(res);
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/search/name/{businessName}")
     public ResponseEntity<Business> getBusinessByName(
             @PathVariable String businessName) {

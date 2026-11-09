@@ -161,10 +161,14 @@ public class Business {
      */
     private String upiId;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "business_payment_qr_codes", joinColumns = @JoinColumn(name = "business_id"))
-    @Column(name = "qr_code_url", length = 1000)
-    private java.util.List<String> paymentQrCodes = new java.util.ArrayList<>();
+    @Column(name = "upi_id_2", length = 200)
+    private String upiId2;
+
+    @Column(name = "payment_qr_code1_url", length = 1000)
+    private String paymentQrCode1Url;
+
+    @Column(name = "payment_qr_code2_url", length = 1000)
+    private String paymentQrCode2Url;
 
     @Column(length = 1000)
     private String paymentNotes;
