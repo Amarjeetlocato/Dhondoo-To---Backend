@@ -275,7 +275,7 @@ public class BusinessServiceImpl implements BusinessService {
         java.util.Map<String, String> payload = new java.util.HashMap<>();
         payload.put("businessId", business.getBusinessId());
         payload.put("businessName", business.getBusinessName());
-        payload.put("imageUrl", business.getLogoUrl());
+        payload.put("imageUrl", "");
 
         for (String host : chatHosts) {
             try {
