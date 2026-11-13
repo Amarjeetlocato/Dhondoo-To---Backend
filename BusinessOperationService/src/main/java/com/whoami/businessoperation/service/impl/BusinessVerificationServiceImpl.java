@@ -287,10 +287,10 @@ public class BusinessVerificationServiceImpl
 
                         double distMeters = calculateDistanceMeters(shopLat, shopLng, recLat, recLng);
                         verification.setDistanceMeters(distMeters);
-                        verification.setLocationVerified(distMeters <= 1500.0); // Within 1.5 km
+                        verification.setLocationVerified(distMeters <= 200.0); // Within 200 meters of physical shop location
 
                         log.info("📍 [LOCATION CHECK] BusinessId={}: RecLoc=({}, {}), ShopLoc=({}, {}), Distance={}m, Verified={}",
-                                request.getBusinessId(), recLat, recLng, shopLat, shopLng, distMeters, distMeters <= 1500.0);
+                                request.getBusinessId(), recLat, recLng, shopLat, shopLng, distMeters, distMeters <= 200.0);
                     }
                 });
             } catch (Exception e) {
