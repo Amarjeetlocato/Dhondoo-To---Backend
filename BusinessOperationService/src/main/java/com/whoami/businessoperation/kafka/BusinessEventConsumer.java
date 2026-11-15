@@ -11,6 +11,7 @@ import com.locato.constants.events.businessoperation.VerificationReuploadRequire
 import com.locato.constants.topics.KafkaTopics;
 import com.whoami.businessoperation.domain.enums.BusinessType;
 import com.whoami.businessoperation.dto.request.CreateBusinessApplicationRequest;
+import com.whoami.businessoperation.repository.BusinessApplicationRepository;
 import com.whoami.businessoperation.service.BusinessApplicationService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Component;
 public class BusinessEventConsumer {
 
     private final BusinessApplicationService businessApplicationService;
+    private final BusinessApplicationRepository businessApplicationRepository;
 
     @KafkaListener(
             topics = KafkaTopics.BUSINESS_EVENTS,
@@ -43,6 +45,23 @@ public class BusinessEventConsumer {
                 event.getBusinessId(),
                 event.getUserId()
         );
+
+        try {
+            if (event.getBusinessId() != null && !businessApplicationRepository.existsByBusinessId(event.getBusinessId())) {
+                CreateBusinessApplicationRequest request = CreateBusinessApplicationRequest.builder()
+                        .businessId(event.getBusinessId())
+                        .ownerUserId(event.getUserId())
+                        .businessType(BusinessType.RETAIL)
+                        .businessName(event.getBusinessName())
+                        .phone(event.getMobileNumber())
+                        .description("Auto-created application for " + event.getBusinessName())
+                        .build();
+                businessApplicationService.createApplication(request);
+                log.info("Auto-created draft BusinessApplication from BusinessCreatedEvent for businessId={}", event.getBusinessId());
+            }
+        } catch (Exception e) {
+            log.warn("Could not auto-create application from BusinessCreatedEvent for {}: {}", event.getBusinessId(), e.getMessage());
+        }
 
         acknowledgment.acknowledge();
     }

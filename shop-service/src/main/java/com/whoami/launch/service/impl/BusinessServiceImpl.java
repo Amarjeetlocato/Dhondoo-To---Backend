@@ -30,9 +30,11 @@ import com.whoami.launch.util.SlugUtil;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BusinessServiceImpl implements BusinessService {
 
     private final BusinessRepository businessRepository;
@@ -126,8 +128,9 @@ public class BusinessServiceImpl implements BusinessService {
 
         try {
             shopKafkaProducer.publishBusinessCreated(savedBusiness);
+            shopKafkaProducer.publishApplicationCreationRequested(savedBusiness);
         } catch (Exception e) {
-            // Log kafka exception
+            log.error("Failed to publish business creation events for businessId={}: {}", savedBusiness.getBusinessId(), e.getMessage());
         }
 
         try {
@@ -267,6 +270,7 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     private void syncBusinessChatProfile(Business business) {
+        org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
         String[] chatHosts = {
             "http://chat-service-chat-service.platform.svc.cluster.local:8085",
             "http://chat-service:8085",

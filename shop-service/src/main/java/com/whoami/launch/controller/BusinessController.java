@@ -20,8 +20,8 @@ import com.whoami.launch.dto.BusinessStatusUpdateRequest;
 import com.whoami.launch.dto.BusinessSummaryDTO;
 import com.whoami.launch.dto.FollowBusinessResponse;
 import com.whoami.launch.dto.ReviewResponse;
-import com.whoami.launch.entity.Business;
-import com.whoami.launch.exception.ResourceNotFoundException;
+import com.whoami.launch.entity.BusinessAccessState;
+import com.whoami.launch.repository.BusinessAccessStateRepository;
 import com.whoami.launch.service.BusinessService;
 
 import lombok.RequiredArgsConstructor;
@@ -32,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class BusinessController {
 
     private final BusinessService businessService;
+    private final BusinessAccessStateRepository accessStateRepository;
 
     @GetMapping
     public ResponseEntity<List<Business>> getAllBusinesses() {
@@ -51,6 +52,23 @@ public class BusinessController {
                 .map(ResponseEntity::ok)
                 .orElseGet(() ->
                         ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{businessId}/access-state")
+    public ResponseEntity<BusinessAccessState> getBusinessAccessState(
+            @PathVariable String businessId) {
+
+        BusinessAccessState state = accessStateRepository.findByBusinessId(businessId)
+                .orElseGet(() -> {
+                    BusinessAccessState s = new BusinessAccessState();
+                    s.setBusinessId(businessId);
+                    s.setVerified(false);
+                    s.setSubscriptionActive(false);
+                    s.setPaymentCompleted(false);
+                    return s;
+                });
+
+        return ResponseEntity.ok(state);
     }
 
     @GetMapping("/{businessId}/payment-methods")

@@ -49,7 +49,9 @@ public class BusinessVerificationServiceImpl
         }
 
         if (applicationId == null || applicationId.isBlank()) {
-            throw new IllegalArgumentException("applicationId is required");
+            applicationId = businessApplicationRepository.findByBusinessId(businessId)
+                    .map(com.whoami.businessoperation.domain.entity.BusinessApplication::getApplicationId)
+                    .orElse("APP_" + businessId);
         }
 
         if (verificationRepository.existsByBusinessId(businessId)) {
@@ -518,15 +520,7 @@ public class BusinessVerificationServiceImpl
         }
 
         return verificationRepository.findByBusinessId(businessId)
-                .orElseGet(() -> {
-                    log.info("Auto-creating BusinessVerification record for businessId={}", businessId);
-                    BusinessVerification v = new BusinessVerification();
-                    v.setBusinessId(businessId);
-                    v.setApplicationId("APP_" + businessId);
-                    v.setVerificationStatus(VerificationStatus.VERIFICATION_STARTED);
-                    v.setStartedAt(LocalDateTime.now());
-                    return verificationRepository.save(v);
-                });
+                .orElseThrow(() -> new IllegalArgumentException("Business verification not found for businessId: " + businessId));
     }
 
     private void validateReviewStatus(VerificationStatus status) {
