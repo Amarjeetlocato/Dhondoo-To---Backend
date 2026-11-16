@@ -3,6 +3,7 @@ package com.whoami.launch.entity;
 import java.time.LocalTime;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.locato.enums.BusinessStatus;
 import com.locato.enums.BusinessType;
 
@@ -17,6 +18,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Business {
 
     /**
