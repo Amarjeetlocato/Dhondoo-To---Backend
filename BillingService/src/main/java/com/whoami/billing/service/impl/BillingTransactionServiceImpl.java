@@ -1,5 +1,6 @@
 package com.whoami.billing.service.impl;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -39,21 +40,94 @@ public class BillingTransactionServiceImpl
             CreateBillingRequest request) {
 
         /*
-         * Idempotency protection:
+         * Idempotency & Reuse protection:
          *
-         * If the same billing request is received again,
-         * return the already existing transaction instead of
-         * creating another transaction.
+         * 1. Check if transaction with identical idempotencyKey already exists.
          */
-        return repository.findByIdempotencyKey(
-                        request.getIdempotencyKey()
-                )
-                .map(this::mapToResponse)
-                .orElseGet(() -> createNewTransaction(request));
+        if (request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
+            var existingByIdempotency = repository.findByIdempotencyKey(request.getIdempotencyKey());
+            if (existingByIdempotency.isPresent()) {
+                return mapToResponse(existingByIdempotency.get());
+            }
+        }
+
+        /*
+         * 2. If a PAID transaction already exists for this business/reference, return it.
+         */
+        if (request.getReferenceType() != null && request.getReferenceId() != null) {
+            var existingPaid = repository.findFirstByReferenceTypeAndReferenceIdAndStatus(
+                    request.getReferenceType(),
+                    request.getReferenceId(),
+                    BillingTransactionStatus.PAID
+            );
+            if (existingPaid.isPresent()) {
+                return mapToResponse(existingPaid.get());
+            }
+        }
+
+        /*
+         * 3. Check if an active UNPAID (CREATED) transaction already exists for this
+         *    business/reference and purpose (e.g. user retrying payment or returning to page).
+         */
+        if (request.getReferenceType() != null && request.getReferenceId() != null && request.getPurpose() != null) {
+            var existingActive = repository.findFirstByReferenceTypeAndReferenceIdAndPurposeAndStatus(
+                    request.getReferenceType(),
+                    request.getReferenceId(),
+                    request.getPurpose(),
+                    BillingTransactionStatus.CREATED
+            );
+            if (existingActive.isPresent()) {
+                return mapToResponse(existingActive.get());
+            }
+        }
+
+        return createNewTransaction(request);
+    }
+
+    public static final BigDecimal VERIFICATION_FEE = new BigDecimal("149.00");
+    public static final BigDecimal SUBSCRIPTION_FEE = new BigDecimal("299.00");
+    public static final BigDecimal COMBO_BUNDLE_FEE = new BigDecimal("399.00");
+    public static final BigDecimal COMBO_REFUND_AMOUNT = new BigDecimal("250.00");
+
+    private BigDecimal resolveServerEnforcedAmount(
+            String purpose,
+            String referenceType,
+            BigDecimal clientAmount) {
+
+        String p = purpose != null ? purpose.toUpperCase().trim() : "";
+        String r = referenceType != null ? referenceType.toUpperCase().trim() : "";
+
+        // 1. Special Combo Bundle Offer: Verification + 1-Month Subscription = ₹399.00
+        if (p.contains("COMBO") || r.contains("COMBO")) {
+            return COMBO_BUNDLE_FEE;
+        }
+
+        // 2. Standalone Verification Fee = ₹149.00
+        if (p.contains("VERIFICATION") || r.contains("VERIFICATION")) {
+            return VERIFICATION_FEE;
+        }
+
+        // 3. Standalone Subscription Fee = ₹299.00
+        if (p.contains("SUBSCRIPTION") || r.contains("SUBSCRIPTION")) {
+            return SUBSCRIPTION_FEE;
+        }
+
+        // 4. Default: ensure positive amount
+        if (clientAmount == null || clientAmount.signum() <= 0) {
+            throw new IllegalArgumentException("Billing transaction amount must be greater than zero");
+        }
+
+        return clientAmount;
     }
 
     private BillingTransactionResponse createNewTransaction(
             CreateBillingRequest request) {
+
+        BigDecimal serverEnforcedAmount = resolveServerEnforcedAmount(
+                request.getPurpose(),
+                request.getReferenceType(),
+                request.getAmount()
+        );
 
         BillingTransaction transaction =
                 BillingTransaction.builder()
@@ -61,8 +135,8 @@ public class BillingTransactionServiceImpl
                         .referenceType(request.getReferenceType())
                         .referenceId(request.getReferenceId())
                         .purpose(request.getPurpose())
-                        .amount(request.getAmount())
-                        .currency(request.getCurrency())
+                        .amount(serverEnforcedAmount)
+                        .currency("INR")
                         .status(BillingTransactionStatus.CREATED)
                         .idempotencyKey(request.getIdempotencyKey())
                         .build();

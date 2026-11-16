@@ -63,14 +63,19 @@ public class BusinessControllerInternal {
     public ResponseEntity<BusinessAccessState> getBusinessAccessState(
             @PathVariable String businessId) {
 
-        BusinessAccessState state = accessStateRepository.findByBusinessId(businessId)
-                .orElseGet(() -> {
-                    BusinessAccessState s = new BusinessAccessState();
-                    s.setBusinessId(businessId);
-                    s.setVerified(false);
-                    s.setSubscriptionActive(false);
-                    return s;
-                });
+        BusinessAccessState state = null;
+        try {
+            state = accessStateRepository.findByBusinessId(businessId).orElse(null);
+        } catch (Exception ignored) {
+        }
+
+        if (state == null) {
+            state = new BusinessAccessState();
+            state.setBusinessId(businessId);
+            state.setVerified(false);
+            state.setSubscriptionActive(false);
+            state.setPaymentCompleted(false);
+        }
 
         boolean stateChanged = false;
 

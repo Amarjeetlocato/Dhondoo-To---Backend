@@ -31,4 +31,6 @@ public interface PaymentService {
     PaymentResponse markAsPartiallyRefunded(UUID paymentId);
     
     PaymentResponse retryPayment(UUID paymentId);
+
+    PaymentResponse refundPayment(UUID paymentId, String reason);
 }

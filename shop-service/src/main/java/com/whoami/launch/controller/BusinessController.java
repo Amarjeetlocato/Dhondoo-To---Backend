@@ -20,7 +20,9 @@ import com.whoami.launch.dto.BusinessStatusUpdateRequest;
 import com.whoami.launch.dto.BusinessSummaryDTO;
 import com.whoami.launch.dto.FollowBusinessResponse;
 import com.whoami.launch.dto.ReviewResponse;
+import com.whoami.launch.entity.Business;
 import com.whoami.launch.entity.BusinessAccessState;
+import com.whoami.launch.exception.ResourceNotFoundException;
 import com.whoami.launch.repository.BusinessAccessStateRepository;
 import com.whoami.launch.service.BusinessService;
 
@@ -58,15 +60,19 @@ public class BusinessController {
     public ResponseEntity<BusinessAccessState> getBusinessAccessState(
             @PathVariable String businessId) {
 
-        BusinessAccessState state = accessStateRepository.findByBusinessId(businessId)
-                .orElseGet(() -> {
-                    BusinessAccessState s = new BusinessAccessState();
-                    s.setBusinessId(businessId);
-                    s.setVerified(false);
-                    s.setSubscriptionActive(false);
-                    s.setPaymentCompleted(false);
-                    return s;
-                });
+        BusinessAccessState state = null;
+        try {
+            state = accessStateRepository.findByBusinessId(businessId).orElse(null);
+        } catch (Exception ignored) {
+        }
+
+        if (state == null) {
+            state = new BusinessAccessState();
+            state.setBusinessId(businessId);
+            state.setVerified(false);
+            state.setSubscriptionActive(false);
+            state.setPaymentCompleted(false);
+        }
 
         return ResponseEntity.ok(state);
     }

@@ -20,12 +20,8 @@ public class CreatePaymentRequest {
     @NotNull
     private PaymentGateway gateway;
 
-    @NotNull
-    @DecimalMin(value = "0.00")
     private BigDecimal amount;
 
-    @NotBlank
-    @Size(min = 3, max = 3)
     private String currency;
 
     @Size(max = 50)

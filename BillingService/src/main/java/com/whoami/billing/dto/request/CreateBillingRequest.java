@@ -27,7 +27,6 @@ public class CreateBillingRequest {
     @Size(max = 50)
     private String purpose;
 
-    @NotNull
     @DecimalMin(value = "0.00")
     private BigDecimal amount;
 

@@ -98,4 +98,16 @@ public class PaymentController {
 
         return paymentService.retryPayment(paymentId);
     }
+
+    @PostMapping("/{paymentId}/refund")
+    public PaymentResponse refundPayment(
+            @PathVariable UUID paymentId,
+            @RequestParam(required = false, defaultValue = "Customer requested refund")
+            String reason) {
+
+        return paymentService.refundPayment(
+                paymentId,
+                reason
+        );
+    }
 }
